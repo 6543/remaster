@@ -1,6 +1,6 @@
 #!/bin/bash
 #@version 1.5.2
-#@autor Martin.Huber@stbaro.bayern.de
+#@autor 6543@email.clocal
 #@date 2016-09-12
 
 
@@ -26,18 +26,18 @@ function main_newiso() {
 	filesystem_destination="/data/remaster/result/filesystem.squashfs"
 
 	#Network
-	proxy_host="www-proxy.bybn.de"
-	proxy_port="80"
-	domain="stmi.bayern.de"
-	nameserver="10.173.230.81,10.173.27.82"
+	proxy_host="proxy.local"
+	proxy_port="8080"
+	domain="local"
+	nameserver="10.x.x.2,10.x.x.1"
 
 	#remaster_script
 	distro="desinfect2016"
 
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@stbaro.bayern.de"
-	log_mail_aim="Martin.Huber@stbaro.bayern.de"
+	log_mail_source="desinfect@email.clocal"
+	log_mail_aim="6543@email.clocal"
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
@@ -238,17 +238,16 @@ function main_desinfect_pxe_update() {
 	filesystem_img="/data/remaster/result/filesystem.squashfs"
 
 	#Network
-	domain="stmi.bayern.de"
-	nameserver="10.173.230.81,10.173.27.82"
+	domain="local"
+	nameserver="10.x.x.1,10.x.x.2"
 
 	#remaster_script
 	distro="desinfect2016"
 
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@stbaro.bayern.de"
-	#log_mail_source="`hostname`@stbaro.bayern.de"
-	log_mail_aim="Martin.Huber@stbaro.bayern.de"
+	log_mail_source="desinfect@email.clocal"
+	log_mail_aim="6543@email.clocal"
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
@@ -416,18 +415,18 @@ function main_test() {
 	filesystem_destination="/data/remaster/result/filesystem.squashfs"
 
 	#Network
-	proxy_host="www-proxy.bybn.de"
-	proxy_port="80"
-	domain="stmi.bayern.de"
-	nameserver="10.173.230.81,10.173.27.82"
+	proxy_host="proxy.local"
+	proxy_port="8080"
+	domain="local"
+	nameserver="10.x.x.1,10.x.x.2"
 
 	#remaster_script
 	distro="desinfect2016"	
 	
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@stbaro.bayern.de"
-	log_mail_aim="Martin.Huber@stbaro.bayern.de"
+	log_mail_source="desinfect@email.clocal"
+	log_mail_aim="6543@email.clocal"
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
