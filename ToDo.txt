@@ -1,0 +1,19 @@
+Prio1:
+-log erstellen (error&succes)
+ -> sendemail smtp server var
+
+Prio2:
+-überprüfung ob tools vorhanden sind!
+
+Prio3:
+-wizard
+-erweiterte param
+ -> functionen einzeln ansteuern
+ -> updaten
+ -> andere distros
+ -> mit config auslesen ...
+-packetieren als remaster.deb!
+
+einzelne funktionen in dateien auslagern
+boot meny dynamisch gen?
+profielskrypte oder konfigs bzw wie konfigurierbar ... (mit xml beschreiben? oder ini ...)
