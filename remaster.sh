@@ -1,7 +1,7 @@
 #!/bin/bash
-#@version 1.7.2
+#@version 1.7.3
 #@autor Martin.Huber@obermui.de
-#@date 2017-06-19
+#@date 2017-06-20
 
 #####################################################################################
 ################## S e t t i n g s ##################################################
@@ -39,13 +39,14 @@ log_mail_aim="6543@email.clocal"
 log_mail_subject="Desinfect_Remaster"
 
 #Sonstiges
-tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan apt-transport-https"
+tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
 
 
 #####################################################################################
 ################## M o d e s ########################################################
 #####################################################################################
 
+#remaster.sh renew
 function main_renew() {
 
 	[ -f "$log_file" ] || touch "$log_file"
@@ -199,6 +200,7 @@ function main_renew() {
 	on_exit 0
 }
 
+#remaster.sh update
 function main_update() {
 
 	[ "$log_file" == "" ] && log_file="`mktemp`"
@@ -309,6 +311,7 @@ function main_update() {
 	on_exit 0
 }
 
+#remaster.sh renew_test
 function main_renew_test() {
 
 	[ -f "$log_file" ] || touch "$log_file"
@@ -462,6 +465,7 @@ function main_renew_test() {
 	on_exit 0
 }
 
+#remaster.sh update_test
 function main_update_test() {
 
 	[ "$log_file" == "" ] && log_file="`mktemp`"
@@ -537,6 +541,9 @@ function main_update_test() {
 	os_update$distro "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
+	tools_add$distro "$chroot_path" "$tools_list"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
 	# 5. Manuelle Aktionen - deaktiviert
 
 	#echo "Now You Have TIME to do something MANUALY!"
@@ -572,6 +579,7 @@ function main_update_test() {
 	on_exit 0
 }
 
+#remaster.sh error_code [error_level]
 function main_error_code() {
 	error_code $1
 }
@@ -670,7 +678,7 @@ function check_user() {
 	#check root
 	[ "`whoami`" == "root" ] || {
 		echo "### ERROR ### Remaster need ROOT permision!"
-		exit 10
+		return 10
 	}
 }
 
@@ -679,9 +687,10 @@ function check_dependency() {
 	for packet in squashfs-tools xorriso wget sed sendemail; do
 		[ "`dpkg -l $packet 2>&1`" == "dpkg-query: Kein Paket gefunden, das auf $packet passt" ] && {
 			echo "### ERROR ### Packet $packet not installed"
-			exit 16
+			return 16
 		}
 	done
+	return 0
 }
 
 
@@ -1646,21 +1655,20 @@ function os_update_desinfect2017() {
 		cat "$tmp_file_23421" > "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 		chroot "$chroot_dir" /bin/bash -c "/usr/bin/esetrand" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 
-		echo "set timeout: 2min"
-		av_eaet_timeout=1200
+		echo "set timeout: 5min"
+		av_eaet_timeout=300
 		tmp_var_3092="`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`"
 
 		#eig. update routine
 		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets restart"
 		sleep 2
-		chroot "$chroot_dir" /bin/bash -c "/opt/eset/esets/sbin/esets_daemon --update"
+		chroot "$chroot_dir" /bin/bash --login -c "/opt/eset/esets/sbin/esets_daemon --update"
 
 		#warten auf daemon update ...
-		sleep 10m
 		echo "wait 10min for Eset AV update"
 		while [ "`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`" == "$tmp_var_3092" ]; do
-			sleep 1
-			av_eaet_timeout=$((av_eaet_timeout-1))
+			sleep 10
+			av_eaet_timeout=$((av_eaet_timeout-10))
 			[ $av_eaet_timeout -gt 0 ] || tmp_var_3092=
 		done
 
@@ -1679,7 +1687,7 @@ function os_update_desinfect2017() {
 	#Sophos
 	{
 		echo "Sophos..."
-		chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3"
+		chroot "$chroot_dir" /bin/bash --login -c "/opt/sophos-av/bin/savupdate -v3"
 		#chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3 -a"
 		echo "Sophos done"
 	}
@@ -1688,10 +1696,12 @@ function os_update_desinfect2017() {
 	{
 		echo "F-Secure..."
 		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua start"
-		sleep 30s
-		chroot "$chroot_dir" /bin/bash -c "/opt/f-secure/fssp/bin/dbupdate_lite" && echo "Update Success"
-		sleep 5s
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsupdate stop"
+		( sleep 1m; chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua start" ) &
+		chroot "$chroot_dir" /bin/bash --login -c "/opt/f-secure/fssp/bin/dbupdate_lite" && echo "Update Success"
+		sleep 1m
 		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua stop"
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsupdate stop"
 		echo "F-Secure done"
 	}
 
@@ -1709,11 +1719,8 @@ function tools_add() {
 	tools_list="$2"
 
 	chroot "$chroot_dir" /bin/bash -c "apt-get update" > /dev/null
-	[ "$?" == "0" ] && {
-		echo "apt-get update: success"
-		chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
-	}
-
+	[ "$?" == "0" ] && echo "apt-get update: success"
+	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
 	echo "done"
 }
 
