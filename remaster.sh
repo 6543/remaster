@@ -1,5 +1,5 @@
 #!/bin/bash
-#@version 1.8.0
+#@version 1.8.1
 #@autor Martin.Huber@obermui.de
 #@date 2017-07-04
 
@@ -278,8 +278,9 @@ function main_update_pxe() {
 
 	# 5. Manuelle Aktionen - deaktiviert
 
-	#echo "Now You Have TIME to do something MANUALY!"
-	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	echo "Now You Have TIME to do something MANUALY!"
+	#echo "enter in shell:
+	chroot $chroot_path /bin/bash
 	#echo "Are You Finisch? Then Press [ENTER]"
 	#read
 
@@ -1619,8 +1620,7 @@ function os_update_desinfect2017() {
 		echo "Sophos..."
 		#chroot "$chroot_dir" /bin/bash --login -c "/opt/sophos-av/bin/savupdate -v3"
 		chroot_sh "$chroot_dir" "/opt/sophos-av/bin/savupdate -v3"
-		echo "sleep 10s and do it again" && sleep 10s
-		chroot_sh "$chroot_dir" "/opt/sophos-av/bin/savupdate -v3"
+		chroot_sh "$chroot_dir" "/opt/sophos-av/bin/savdstatus --version"
 		#chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3 -a"
 		echo "Sophos done"
 	}
