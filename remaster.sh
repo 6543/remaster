@@ -1,15 +1,14 @@
 #!/bin/bash
-#@version 1.7.3
+#@version 1.8.0
 #@autor Martin.Huber@obermui.de
-#@date 2017-06-20
+#@date 2017-07-04
 
 #####################################################################################
 ################## S e t t i n g s ##################################################
 #####################################################################################
 
-## MODU
-
-modus_default="renew"
+## MODUS
+modus_default="update_pxe"
 
 #CD/DVD
 #entweder iso_source oder filesystem_source alls quelle
@@ -35,6 +34,7 @@ distro="desinfect2017"
 #LOG
 log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
 log_mail_source="desinfect@email.clocal"
+log_mail_smtp="smtp.mail.local:25"
 log_mail_aim="6543@email.clocal"
 log_mail_subject="Desinfect_Remaster"
 
@@ -83,7 +83,6 @@ function main_renew() {
 	echo >> "$log_file"
 
 	echo "log_file=\"$log_file\""
-	echo "log_mail_source=\"$log_mail_source\""
 	echo "log_mail_aim=\"$log_mail_aim\""
 	echo "log_mail_subject=\"$log_mail_subject\""
 	echo ""
@@ -95,6 +94,7 @@ function main_renew() {
 	echo "### Enviroment ###"
 	echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
 	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	#env >> "$log_file"
 	echo $'\n\n' >> "$log_file"
 
 	echo $'### R U N ... ###\n' >> "$log_file"
@@ -200,8 +200,8 @@ function main_renew() {
 	on_exit 0
 }
 
-#remaster.sh update
-function main_update() {
+#remaster.sh update_pxe
+function main_update_pxe() {
 
 	[ "$log_file" == "" ] && log_file="`mktemp`"
 	[ -f "$log_file" ] || touch "$log_file"
@@ -210,7 +210,7 @@ function main_update() {
 	chroot_path="`mktemp -d`"
 
 	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: update" >> "$log_file"
+	echo "MODE: update_pxe" >> "$log_file"
 	echo "HOST: `hostname`" >> "$log_file"
 	echo >> "$log_file"
 
@@ -229,7 +229,6 @@ function main_update() {
 	echo >> "$log_file"
 
 	echo "log_file=\"$log_file\""
-	echo "log_mail_source=\"$log_mail_source\""
 	echo "log_mail_aim=\"$log_mail_aim\""
 	echo "log_mail_subject=\"$log_mail_subject\""
 	echo ""
@@ -240,6 +239,7 @@ function main_update() {
 
 	echo "### Enviroment ###"
 	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	#env >> "$log_file"
 	echo $'\n\n' >> "$log_file"
 
 	echo $'### R U N ... ###\n' >> "$log_file"
@@ -311,9 +311,8 @@ function main_update() {
 	on_exit 0
 }
 
-#remaster.sh renew_test
-function main_renew_test() {
-
+#remaster.sh update_iso #in arbeit
+function main_update_iso() {
 	[ -f "$log_file" ] || touch "$log_file"
 	tail -f "$log_file" --pid="$$" &
 
@@ -321,7 +320,7 @@ function main_renew_test() {
 	iso_extr_dir="`mktemp -d`"
 
 	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: renew_test" >> "$log_file"
+	echo "MODE: update_iso" >> "$log_file"
 	echo "HOST: `hostname`" >> "$log_file"
 	echo >> "$log_file"
 
@@ -348,7 +347,6 @@ function main_renew_test() {
 	echo >> "$log_file"
 
 	echo "log_file=\"$log_file\""
-	echo "log_mail_source=\"$log_mail_source\""
 	echo "log_mail_aim=\"$log_mail_aim\""
 	echo "log_mail_subject=\"$log_mail_subject\""
 	echo ""
@@ -360,6 +358,7 @@ function main_renew_test() {
 	echo "### Enviroment ###"
 	echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
 	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	#env >> "$log_file"
 	echo $'\n\n' >> "$log_file"
 
 	echo $'### R U N ... ###\n' >> "$log_file"
@@ -375,6 +374,16 @@ function main_renew_test() {
 
 	# 2. Entpacke ISO
 	iso_extract "$iso_source" "$iso_extr_dir"
+
+	# 3. Checke pxe version
+	# if pxe is set
+	# 	if (date != date ); then $0 update_pxe 		#4.1
+	#		filesystem = update												#4.2
+	# else
+	#  	extrakt filesystem												#5.
+	#		update																		#6.
+	# done
+	# pack iso
 
 	# 3. Entpacken der Dateien des Live-Systems
 	filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
@@ -416,9 +425,9 @@ function main_renew_test() {
 
 	# 8. Manuelle Aktionen - deaktiviert
 
-	echo "Now You Have TIME to do something MANUALY!"
-	echo "enter in shell: #> chroot $chroot_path /bin/bash"
-	chroot $chroot_path /bin/bash
+	#echo "Now You Have TIME to do something MANUALY!"
+	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	#chroot $chroot_path /bin/bash
 	#echo "Are You Finisch? Then Press [ENTER]"
 
 	# 9. Umount - Chroot Umgebung auflösen
@@ -465,118 +474,9 @@ function main_renew_test() {
 	on_exit 0
 }
 
-#remaster.sh update_test
-function main_update_test() {
-
-	[ "$log_file" == "" ] && log_file="`mktemp`"
-	[ -f "$log_file" ] || touch "$log_file"
-	tail -f "$log_file" --pid="$$" &
-
-	chroot_path="`mktemp -d`"
-
-	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: update_test" >> "$log_file"
-	echo "HOST: `hostname`" >> "$log_file"
-	echo >> "$log_file"
-
-	echo "### S e t t i n g s ###" >> "$log_file"
-	echo "#Filesystem (for pxe)"  >> "$log_file"
-	echo "filesystem_source=\"$filesystem_source\""
-	echo >> "$log_file"
-
-	echo "#Network" >> "$log_file"
-	echo "domain=\"$domain\"" >> "$log_file"
-	echo "nameserver=\"$nameserver\"" >> "$log_file"
-	echo >> "$log_file"
-
-	echo "#remaster_script" >> "$log_file"
-	echo "distro=\"$distro\"" >> "$log_file"
-	echo >> "$log_file"
-
-	echo "log_file=\"$log_file\""
-	echo "log_mail_source=\"$log_mail_source\""
-	echo "log_mail_aim=\"$log_mail_aim\""
-	echo "log_mail_subject=\"$log_mail_subject\""
-	echo ""
-
-	echo "#Sonstiges" >> "$log_file"
-	echo "tools_list=\"$tools_list\"" >> "$log_file"
-	echo $'\n' >> "$log_file"
-
-	echo "### Enviroment ###"
-	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
-	echo $'\n\n' >> "$log_file"
-
-	echo $'### R U N ... ###\n' >> "$log_file"
-
-	#1. Set and Check Enviroment
-	check_user
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	check_dependency
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	[ "$distro" != "" ] && distro="_$distro"
-
-	# 1. Entpacken der Dateien des Live-Systems
-	[ -e "$filesystem_source" ] || {
-	  echo "### ERROR ### \"$filesystem_source\" does not exist!" >> "$log_file"
-	  on_exit 15 >> "$log_file"
-	}
-
-	filesystem_extract "$filesystem_source" "$chroot_path" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	# 2. Vorbereiten für chroot-Umgebung:
-
-	chroot_initial$distro "$chroot_path" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	# 3. Setzen der Netzwerk-Einstellungen:
-
-	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	# 4. Updaten von Desinfec't:
-	os_update$distro "$chroot_path" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	tools_add$distro "$chroot_path" "$tools_list"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	# 5. Manuelle Aktionen - deaktiviert
-
-	#echo "Now You Have TIME to do something MANUALY!"
-	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
-	#echo "Are You Finisch? Then Press [ENTER]"
-	#read
-
-	# 6. Umount - Chroot Umgebung auflösen
-
-	chroot_umount$distro "$chroot_path" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	#Überprüfen ob alles ausgehängt wurde
-	[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
-	  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
-	  on_exit 21 >> "$log_file"
-	}
-
-	# 5. Packen und Ersetzen der Dateien
-	rm "$filesystem_source" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	filesystem_pack "$chroot_path"  "$filesystem_source" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	chmod 777 "$filesystem_source" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	workspace_erase "$chroot_path/" >> "$log_file"
-	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-
-	on_exit 0
+#remaster.sh update
+function main_update() {
+	main_update_pxe
 }
 
 #remaster.sh error_code [error_level]
@@ -606,7 +506,7 @@ function on_exit() {
 			echo "$log_mail_subject"
 			echo $'####################################################################################\n\n'
 			cat "$log_file"
-		} | sendemail -s mail.stbv.bybn.de -f desinfect@bayern.de -t "$mail_aim" -u "$log_mail_subject" -o tls=no
+		} | sendemail -s "$log_mail_smtp" -f "$log_mail_source" -t "$mail_aim" -u "$log_mail_subject" -o tls=no
 	done
 
 	[ "$1" != "0" ] && {
@@ -1085,6 +985,27 @@ function chroot_is_mounted() {
 	fi
 }
 
+#chroot_sh [chroot_dir] [command]
+function chroot_sh() {
+	#check chroot dir
+	chroot_dir="$1"
+	[ -d "$chroot_dir" ] || {
+		echo "### ERROR ### chroot_umount: chroot directory not exist!"
+		return 12
+	}
+
+	command="$2"
+
+	[ -f "$chroot_dir/tmp/env.sh" ] || {
+		#if not exist create environment skript
+		cat "$chroot_dir/etc/environment" | grep -v "#" | grep "=" > "$chroot_dir/tmp/env"
+		while read line; do echo export $line; done < "$chroot_dir/tmp/env" > "$chroot_dir/tmp/env.sh"
+		chmod +x "$chroot_dir/tmp/env.sh" && rm "$chroot_dir/tmp/env"
+	}
+
+	chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; $command"
+}
+
 ### Settings ###
 ### proxy
 
@@ -1101,11 +1022,15 @@ function proxy_enable() {
 		return 12
 	}
 
-	#Wenn alle drei Parameter gegeben
+	#Wenn alle zwei Parameter gegeben
 	if [ "$proxy_host" != "" ] && [ "$proxy_port" != "" ] ; then
 		echo "http_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
 		echo "https_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
 		echo "ftp_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+
+		echo "HTTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+		echo "HTTPS_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+		echo "FTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
 
 		echo "Acquire::http::Proxy  \"http://$proxy_host:$proxy_port\"\;" > $chroot_dir/etc/apt/apt.conf.d/90proxy
 		echo "Acquire::ftp::Proxy \"ftp://$proxy_host:$proxy_port\"\;" >> $chroot_dir/etc/apt/apt.conf.d/90proxy
@@ -1635,14 +1560,16 @@ function os_update_desinfect2017() {
 	#Avast Avira
 	{
 		echo "Avira ..."
-		chroot "$chroot_dir" /bin/bash -c "/AntiVirUpdate/avupdate" | grep -v " -> "
+		#chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; /AntiVirUpdate/avupdate" | grep -v " -> "
+		chroot_sh "$chroot_dir" "/AntiVirUpdate/avupdate" | grep -v " -> "
 		echo "Avira done"
 	}
 
 	#Clam AV
 	{
 		echo "ClamAV..."
-		chroot "$chroot_dir" /bin/bash -c "freshclam" > /dev/null
+		#chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; freshclam" > /dev/null
+		chroot_sh "$chroot_dir" "freshclam" > /dev/null
 		rm -f "$chroot_dir/var/lib/clamav/daily.cld"
 		echo "ClamAV done"
 	}
@@ -1655,17 +1582,19 @@ function os_update_desinfect2017() {
 		cat "$tmp_file_23421" > "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 		chroot "$chroot_dir" /bin/bash -c "/usr/bin/esetrand" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 
-		echo "set timeout: 5min"
 		av_eaet_timeout=300
+		echo "set timeout: $((av_eaet_timeout/60))min"
 		tmp_var_3092="`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`"
 
 		#eig. update routine
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets restart"
+		#chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets restart"
+		chroot_sh "$chroot_dir" "/etc/init.d/esets restart"
 		sleep 2
-		chroot "$chroot_dir" /bin/bash --login -c "/opt/eset/esets/sbin/esets_daemon --update"
+		#chroot "$chroot_dir" /bin/bash --login -c "/opt/eset/esets/sbin/esets_daemon --update"
+		chroot_sh "$chroot_dir" "/opt/eset/esets/sbin/esets_daemon --update"
 
 		#warten auf daemon update ...
-		echo "wait 10min for Eset AV update"
+		echo "wait $((av_eaet_timeout/60))min for Eset AV update"
 		while [ "`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`" == "$tmp_var_3092" ]; do
 			sleep 10
 			av_eaet_timeout=$((av_eaet_timeout-10))
@@ -1674,7 +1603,8 @@ function os_update_desinfect2017() {
 
 		sleep 4
 
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets stop"
+		#chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets stop"
+		chroot_sh "$chroot_dir" "/etc/init.d/esets stop"
 
 		cat "$tmp_file_23421" > "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 
@@ -1687,7 +1617,10 @@ function os_update_desinfect2017() {
 	#Sophos
 	{
 		echo "Sophos..."
-		chroot "$chroot_dir" /bin/bash --login -c "/opt/sophos-av/bin/savupdate -v3"
+		#chroot "$chroot_dir" /bin/bash --login -c "/opt/sophos-av/bin/savupdate -v3"
+		chroot_sh "$chroot_dir" "/opt/sophos-av/bin/savupdate -v3"
+		echo "sleep 10s and do it again" && sleep 10s
+		chroot_sh "$chroot_dir" "/opt/sophos-av/bin/savupdate -v3"
 		#chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3 -a"
 		echo "Sophos done"
 	}
@@ -1695,13 +1628,13 @@ function os_update_desinfect2017() {
 	#F-Secure
 	{
 		echo "F-Secure..."
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua start"
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsupdate stop"
-		( sleep 1m; chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua start" ) &
-		chroot "$chroot_dir" /bin/bash --login -c "/opt/f-secure/fssp/bin/dbupdate_lite" && echo "Update Success"
+		chroot_sh "$chroot_dir" "/etc/init.d/fsaua start"
+		chroot_sh "$chroot_dir" "/etc/init.d/fsupdate stop"
+		( sleep 1m; chroot_sh "$chroot_dir" "/etc/init.d/fsaua start" ) &
+		chroot_sh "$chroot_dir" "/opt/f-secure/fssp/bin/dbupdate_lite" && echo "Update Success"
 		sleep 1m
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua stop"
-		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsupdate stop"
+		chroot_sh "$chroot_dir" "/etc/init.d/fsaua stop"
+		chroot_sh "$chroot_dir" "/etc/init.d/fsupdate stop"
 		echo "F-Secure done"
 	}
 
