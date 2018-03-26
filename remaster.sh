@@ -1,5 +1,5 @@
 #!/bin/bash
-#@version 1.7.1
+#@version 1.7.2
 #@autor Martin.Huber@obermui.de
 #@date 2017-06-19
 
@@ -98,11 +98,12 @@ function main_renew() {
 
 	echo $'### R U N ... ###\n' >> "$log_file"
 
-	#check root
-	[ "`whoami`" == "root" ] || {
-	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-	  on_exit 10 >> "$log_file"
-	}
+	#1. Set and Check Enviroment
+	check_user
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	check_dependency
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 	[ "$distro" != "" ] && distro="_$distro"
 
@@ -241,11 +242,12 @@ function main_update() {
 
 	echo $'### R U N ... ###\n' >> "$log_file"
 
-	#check root
-	[ "`whoami`" == "root" ] || {
-	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-	  on_exit 10 >> "$log_file"
-	}
+	#1. Set and Check Enviroment
+	check_user
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	check_dependency
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 	[ "$distro" != "" ] && distro="_$distro"
 
@@ -359,11 +361,12 @@ function main_renew_test() {
 
 	echo $'### R U N ... ###\n' >> "$log_file"
 
-	#check root
-	[ "`whoami`" == "root" ] || {
-	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-	  on_exit 10 >> "$log_file"
-	}
+	#1. Set and Check Enviroment
+	check_user
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	check_dependency
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 	[ "$distro" != "" ] && distro="_$distro"
 
@@ -502,11 +505,12 @@ function main_update_test() {
 
 	echo $'### R U N ... ###\n' >> "$log_file"
 
-	#check root
-	[ "`whoami`" == "root" ] || {
-	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-	  on_exit 10 >> "$log_file"
-	}
+	#1. Set and Check Enviroment
+	check_user
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	check_dependency
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 	[ "$distro" != "" ] && distro="_$distro"
 
@@ -568,6 +572,9 @@ function main_update_test() {
 	on_exit 0
 }
 
+function main_error_code() {
+	error_code $1
+}
 
 #####################################################################################
 ################## F u n c t i o n s ################################################
@@ -608,7 +615,7 @@ function error_code() {
   	"")
 			echo $'ID:\tDescription\n----------------------------------------------------\n1\tAllgemeiner Fehler\n2\tNo Paramters / wrong parameters'
 			echo $'3\tWrong Settings\n4\tProgramm missing\n\n10\tno root\n11\tfile no found\n12\tdir not found\n13\tcant create/delete file/dir'
-			echo $'14\tcorrupt file (unsquashfs, mount iso, ...)\n15\twrong file (iso has no squashfs-file ...)\n\n20\tmount error\n21\tunmoun error\n22\twrong filesystem'
+			echo $'14\tcorrupt file (unsquashfs, mount iso, ...)\n15\twrong file (iso has no squashfs-file ...)\n16\trequired Packet not found\n\n20\tmount error\n21\tunmoun error\n22\twrong filesystem'
 			;;
 		1)
 			echo "Allgemeiner Fehler"
@@ -640,6 +647,9 @@ function error_code() {
   	15)
   		echo "wrong file (iso has no squashfs-file ...)"
   		;;
+		16)
+			echo "required Packet not found"
+			;;
   	20)
   		echo "tmount error"
   		;;
@@ -654,6 +664,26 @@ function error_code() {
   		;;
 	esac
 }
+
+#check_user
+function check_user() {
+	#check root
+	[ "`whoami`" == "root" ] || {
+		echo "### ERROR ### Remaster need ROOT permision!"
+		exit 10
+	}
+}
+
+#check_dependency
+function check_dependency() {
+	for packet in squashfs-tools xorriso wget sed sendemail; do
+		[ "`dpkg -l $packet 2>&1`" == "dpkg-query: Kein Paket gefunden, das auf $packet passt" ] && {
+			echo "### ERROR ### Packet $packet not installed"
+			exit 16
+		}
+	done
+}
+
 
 ### Workspace ###
 
@@ -1727,14 +1757,5 @@ function tools_add_desinfect2017() {
 if [ -z "$1" ]; then
 	main_$modus_default
 else
-	main_$1
+	main_$1 $2 $3 $4 $5 $6 $7 $8 $9
 fi
-
-
-#packet=plumadfd
-#[ "`dpkg -l $packet 2>&1`" == "dpkg-query: Kein Paket gefunden, das auf $packet passt" ] && {
-#	echo not installed $packet
-#}
-#Benötigte packete:
-# unsquashfs; mksquashfs; xorriso; wget; sed; chroot; sendemail;
-# apt install xorriso wget sed sendemail squashfs-tools
