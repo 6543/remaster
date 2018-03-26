@@ -1,7 +1,7 @@
 #!/bin/bash
-#@version 1.7.0
-#@autor Martin.Huber@stbaro.bayern.de
-#@date 2017-06-16
+#@version 1.7.1
+#@autor Martin.Huber@obermui.de
+#@date 2017-06-19
 
 #####################################################################################
 ################## S e t t i n g s ##################################################
@@ -9,7 +9,7 @@
 
 ## MODU
 
-modus_default=newiso
+modus_default="renew"
 
 #CD/DVD
 #entweder iso_source oder filesystem_source alls quelle
@@ -46,7 +46,7 @@ tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvnc
 ################## M o d e s ########################################################
 #####################################################################################
 
-function main_newiso() {
+function main_renew() {
 
 	[ -f "$log_file" ] || touch "$log_file"
 	tail -f "$log_file" --pid="$$" &
@@ -55,7 +55,7 @@ function main_newiso() {
 	iso_extr_dir="`mktemp -d`"
 
 	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: newiso" >> "$log_file"
+	echo "MODE: renew" >> "$log_file"
 	echo "HOST: `hostname`" >> "$log_file"
 	echo >> "$log_file"
 
@@ -198,7 +198,7 @@ function main_newiso() {
 	on_exit 0
 }
 
-function main_desinfect_pxe_update() {
+function main_update() {
 
 	[ "$log_file" == "" ] && log_file="`mktemp`"
 	[ -f "$log_file" ] || touch "$log_file"
@@ -207,7 +207,7 @@ function main_desinfect_pxe_update() {
 	chroot_path="`mktemp -d`"
 
 	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: desinfect_pxe_update" >> "$log_file"
+	echo "MODE: update" >> "$log_file"
 	echo "HOST: `hostname`" >> "$log_file"
 	echo >> "$log_file"
 
@@ -307,17 +307,16 @@ function main_desinfect_pxe_update() {
 	on_exit 0
 }
 
-function main_test() {
-	[ "$log_file" == "" ] && log_file="`mktemp`"
+function main_renew_test() {
+
 	[ -f "$log_file" ] || touch "$log_file"
 	tail -f "$log_file" --pid="$$" &
 
 	chroot_path="`mktemp -d`"
 	iso_extr_dir="`mktemp -d`"
 
-
 	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-	echo "MODE: main_test" >> "$log_file"
+	echo "MODE: renew_test" >> "$log_file"
 	echo "HOST: `hostname`" >> "$log_file"
 	echo >> "$log_file"
 
@@ -329,8 +328,7 @@ function main_test() {
 	echo >> "$log_file"
 
 	echo "#Filesystem (for pxe)"  >> "$log_file"
-	echo "filesystem_source=\"$filesystem_source\""
-	echo "filesystem_source=\"$filesystem_source\""
+	echo "filesystem_source=\"$filesystem_source\""  >> "$log_file"
 	echo >> "$log_file"
 
 	echo "#Network" >> "$log_file"
@@ -361,14 +359,7 @@ function main_test() {
 
 	echo $'### R U N ... ###\n' >> "$log_file"
 
-
-	### Check Settings ####
-
-	# to ad
-	# to ad
-
-
-	# check script run with root
+	#check root
 	[ "`whoami`" == "root" ] || {
 	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
 	  on_exit 10 >> "$log_file"
@@ -376,39 +367,25 @@ function main_test() {
 
 	[ "$distro" != "" ] && distro="_$distro"
 
+	# 2. Entpacke ISO
+	iso_extract "$iso_source" "$iso_extr_dir"
 
-	#If iso sorce & aim: entpake
-	[ "$iso_source" != "" ] && [ "$iso_destination" != "" ] && {
-	  #Entpacke ISO
-	  iso_extract "$iso_source" "$iso_extr_dir" >> "$log_file"
-	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+	# 3. Entpacken der Dateien des Live-Systems
+	filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
+	[ -e "$filesystem_img" ] || {
+	  echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
+	  on_exit 15 >> "$log_file"
 	}
-
-	#If file source set
-	if [ "$filesystem_source" != "" ]; then
-	  filesystem_img="$filesystem_source"
-	else
-	  filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-	  [ -e "$filesystem_img" ] || {
-	    echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
-	    on_exit 15 >> "$log_file"
-	  }
-	fi
-
-	### Normal ###
-
-	### 3. Entpacken der Dateien des Live-Systems
-
 
 	filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-	### 4. Vorbereiten für chroot-Umgebung:
+	# 4. Vorbereiten für chroot-Umgebung:
 
 	chroot_initial$distro "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-	### 5. Setzen der Netzwerk-Einstellungen:
+	# 5. Setzen der Netzwerk-Einstellungen:
 
 	proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -416,19 +393,29 @@ function main_test() {
 	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-	### 6. Updaten von Desinfec't:
+	# 6. Updaten von Desinfec't:
 	os_update$distro "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-	### 7. Installation optionaler Tools:
+	# 7. Installation optionaler Tools:
 
 	tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
+	#addo ClamAV to conky_info
+	sed -i 's/# ${color white}ClamAV/ ${color white}ClamAV/g'  "$chroot_path/etc/skel/.conkyrc"
+
 	chroot_clean "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-	### 8. Umount - Chroot Umgebung auflösen
+	# 8. Manuelle Aktionen - deaktiviert
+
+	echo "Now You Have TIME to do something MANUALY!"
+	echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	chroot $chroot_path /bin/bash
+	#echo "Are You Finisch? Then Press [ENTER]"
+
+	# 9. Umount - Chroot Umgebung auflösen
 
 	chroot_umount$distro "$chroot_path" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -439,43 +426,144 @@ function main_test() {
 	  on_exit 21 >> "$log_file"
 	}
 
-	## Normal END ##
-
-	[ "$filesystem_source" != "" ] && filesystem_img="$filesystem_source"
-
-	### 9. Packen und Ersetzen der Dateien des Live-Systems
-	[ -f "$filesystem_img" ] && rm "$filesystem_img" 2>> "$log_file" >> "$log_file"
+	# 10. Packen und Ersetzen der Dateien des Live-Systems
+	rm "$filesystem_img" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 	filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-
+	# wenn iso gewünscht
 	[ "$iso_destination" != "" ] && {
-	  tmp_var_2143445="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-
-	  [ "$tmp_var_2143445" != "$filesystem_img" ] && {
-	    rm "$tmp_var_2143445" 2>> "$log_file" >> "$log_file"
-	    cp "$filesystem_img" "$tmp_var_2143445"
-	  }
-	  tmp_var_2143445=
-
-	  iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
-	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-	  chmod 777 "$iso_destination"
-	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+			iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
+			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 	}
 
-
-	# wenn filesystem gewünscht dann
+	# wenn filesystem gewünscht
 	[ "$filesystem_source" != "" ] && {
-	  chmod 777 "$filesystem_source"
+	  #wen bereits forhanden dann löschen
+	  [ -f "$filesystem_source" ] && rm "$filesystem_source"
+	  cp "$filesystem_img" "$filesystem_source" >> "$log_file"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	  chmod 666 "$filesystem_source"
 	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 	}
+
+	chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
 
 	workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+
+	on_exit 0
+}
+
+function main_update_test() {
+
+	[ "$log_file" == "" ] && log_file="`mktemp`"
+	[ -f "$log_file" ] || touch "$log_file"
+	tail -f "$log_file" --pid="$$" &
+
+	chroot_path="`mktemp -d`"
+
+	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
+	echo "MODE: update_test" >> "$log_file"
+	echo "HOST: `hostname`" >> "$log_file"
+	echo >> "$log_file"
+
+	echo "### S e t t i n g s ###" >> "$log_file"
+	echo "#Filesystem (for pxe)"  >> "$log_file"
+	echo "filesystem_source=\"$filesystem_source\""
+	echo >> "$log_file"
+
+	echo "#Network" >> "$log_file"
+	echo "domain=\"$domain\"" >> "$log_file"
+	echo "nameserver=\"$nameserver\"" >> "$log_file"
+	echo >> "$log_file"
+
+	echo "#remaster_script" >> "$log_file"
+	echo "distro=\"$distro\"" >> "$log_file"
+	echo >> "$log_file"
+
+	echo "log_file=\"$log_file\""
+	echo "log_mail_source=\"$log_mail_source\""
+	echo "log_mail_aim=\"$log_mail_aim\""
+	echo "log_mail_subject=\"$log_mail_subject\""
+	echo ""
+
+	echo "#Sonstiges" >> "$log_file"
+	echo "tools_list=\"$tools_list\"" >> "$log_file"
+	echo $'\n' >> "$log_file"
+
+	echo "### Enviroment ###"
+	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	echo $'\n\n' >> "$log_file"
+
+	echo $'### R U N ... ###\n' >> "$log_file"
+
+	#check root
+	[ "`whoami`" == "root" ] || {
+	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
+	  on_exit 10 >> "$log_file"
+	}
+
+	[ "$distro" != "" ] && distro="_$distro"
+
+	# 1. Entpacken der Dateien des Live-Systems
+	[ -e "$filesystem_source" ] || {
+	  echo "### ERROR ### \"$filesystem_source\" does not exist!" >> "$log_file"
+	  on_exit 15 >> "$log_file"
+	}
+
+	filesystem_extract "$filesystem_source" "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 2. Vorbereiten für chroot-Umgebung:
+
+	chroot_initial$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 3. Setzen der Netzwerk-Einstellungen:
+
+	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 4. Updaten von Desinfec't:
+	os_update$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 5. Manuelle Aktionen - deaktiviert
+
+	#echo "Now You Have TIME to do something MANUALY!"
+	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	#echo "Are You Finisch? Then Press [ENTER]"
+	#read
+
+	# 6. Umount - Chroot Umgebung auflösen
+
+	chroot_umount$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	#Überprüfen ob alles ausgehängt wurde
+	[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
+	  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
+	  on_exit 21 >> "$log_file"
+	}
+
+	# 5. Packen und Ersetzen der Dateien
+	rm "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	filesystem_pack "$chroot_path"  "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	chmod 777 "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	workspace_erase "$chroot_path/" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
 
 	on_exit 0
 }
@@ -1074,7 +1162,7 @@ function proxy_enable_desinfect2017() {
 
 	proxy_enable $1 $2 $3
 
-	echo -n "enable proxy for desinfect's av ... "
+	echo "enable proxy for desinfect's av ... "
 
 	chroot_dir="$1"
 	proxy_host="$2"
@@ -1127,8 +1215,11 @@ function proxy_enable_desinfect2017() {
 	#F-Secure
 	if [ -f "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template" ]; then
 		echo "F-Secure: Found"
-		echo "update_server=http://www-proxy.bybn.de:80" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config"
-		#..
+		echo "enable_fsma=no" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template"
+		echo "update_servers=http://fsbwserver-direct.f-secure.com" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template"
+		echo "update_proxies=http://$proxy_host:$proxy_port" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template"
+		echo "http_proxies=http://$proxy_host:$proxy_port" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template"
+		cat "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template" > "$chroot_dir/etc/opt/f-secure/fsaua/fsaua_config"
 	else
 		eco "F-Secure: NOT Found"
 	fi
@@ -1564,7 +1655,15 @@ function os_update_desinfect2017() {
 	}
 
 	#F-Secure
-
+	{
+		echo "F-Secure..."
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua start"
+		sleep 30s
+		chroot "$chroot_dir" /bin/bash -c "/opt/f-secure/fssp/bin/dbupdate_lite" && echo "Update Success"
+		sleep 5s
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/fsaua stop"
+		echo "F-Secure done"
+	}
 
 	echo "update virus definitions done"
 }
