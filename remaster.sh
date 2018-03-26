@@ -1,646 +1,571 @@
 #!/bin/bash
-#@version 1.6.0
+#@version 1.7.0
 #@autor Martin.Huber@stbaro.bayern.de
-#@date 2017-06-14
+#@date 2017-06-16
+
+#####################################################################################
+################## S e t t i n g s ##################################################
+#####################################################################################
+
+## MODU
+
+modus_default=newiso
+
+#CD/DVD
+#entweder iso_source oder filesystem_source alls quelle
+# -> bei iso gen erforderlich!
+iso_source="/data/remaster/desinfect-2017.iso"
+#destination optinal
+iso_destination="/data/remaster/result/custom_desinfect_`date '+%Y-%m-%d'`.iso"
+iso_lable="DESINFECT_`date '+%Y-%m-%d'`"
+
+#Filesystem (for pxe)
+#entweder iso_source oder filesystem_source alls quelle
+filesystem_source="/data/remaster/result/filesystem.squashfs"
+
+#Network
+proxy_host="proxy.local"
+proxy_port="8080"
+domain="local"
+nameserver="10.x.x.2,10.x.x.1"
+
+#remaster_script
+distro="desinfect2017"
+
+#LOG
+log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
+log_mail_source="desinfect@email.clocal"
+log_mail_aim="6543@email.clocal"
+log_mail_subject="Desinfect_Remaster"
+
+#Sonstiges
+tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan apt-transport-https"
 
 
-### Modes ###
+#####################################################################################
+################## M o d e s ########################################################
+#####################################################################################
 
 function main_newiso() {
 
-	#####################################################################################
-	################## S e t t i n g s ##################################################
-	#####################################################################################
-	#CD/DVD
-	#entweder iso_source oder filesystem_source alls quelle
-	# -> bei iso gen erforderlich!
-	iso_source="/data/remaster/desinfect-2017.iso"
-	#destination optinal
-	iso_destination="/data/remaster/result/custom_desinfect_`date '+%Y-%m-%d'`.iso"
-	iso_lable="DESINFECT_`date '+%Y-%m-%d'`"
+	[ -f "$log_file" ] || touch "$log_file"
+	tail -f "$log_file" --pid="$$" &
 
-	#Filesystem (for pxe)
-	#entweder iso_source oder filesystem_source alls quelle
-	filesystem_source=""
-	#destination optinal
-	filesystem_destination="/data/remaster/result/filesystem.squashfs"
+	chroot_path="`mktemp -d`"
+	iso_extr_dir="`mktemp -d`"
 
-	#Network
-	proxy_host="proxy.local"
-	proxy_port="8080"
-	domain="local"
-	nameserver="10.x.x.2,10.x.x.1"
+	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
+	echo "MODE: newiso" >> "$log_file"
+	echo "HOST: `hostname`" >> "$log_file"
+	echo >> "$log_file"
 
-	#remaster_script
-	distro="desinfect2017"
+	echo "### S e t t i n g s ###" >> "$log_file"
+	echo "#CD/DVD" >> "$log_file"
+	echo "iso_source=\"$iso_source\"" >> "$log_file"
+	echo "iso_destination=\"$iso_destination\"" >> "$log_file"
+	echo "iso_lable=\"$iso_lable\"" >> "$log_file"
+	echo >> "$log_file"
 
-	#LOG
-	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@email.clocal"
-	log_mail_aim="6543@email.clocal"
-	log_mail_subject="Desinfect_Remaster"
+	echo "#Filesystem (for pxe)"  >> "$log_file"
+	echo "filesystem_source=\"$filesystem_source\""  >> "$log_file"
+	echo >> "$log_file"
 
-	#Sonstiges
-	tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan apt-transport-https"
+	echo "#Network" >> "$log_file"
+	echo "proxy_host=\"$proxy_host\"" >> "$log_file"
+	echo "proxy_port=\"$proxy_port\"" >> "$log_file"
+	echo "domain=\"$domain\"" >> "$log_file"
+	echo "nameserver=\"$nameserver\"" >> "$log_file"
+	echo >> "$log_file"
 
+	echo "#remaster_script" >> "$log_file"
+	echo "distro=\"$distro\"" >> "$log_file"
+	echo >> "$log_file"
 
+	echo "log_file=\"$log_file\""
+	echo "log_mail_source=\"$log_mail_source\""
+	echo "log_mail_aim=\"$log_mail_aim\""
+	echo "log_mail_subject=\"$log_mail_subject\""
+	echo ""
 
-	#####################################################################################
-	################## R u n ############################################################
-	#####################################################################################
+	echo "#Sonstiges" >> "$log_file"
+	echo "tools_list=\"$tools_list\"" >> "$log_file"
+	echo $'\n' >> "$log_file"
 
-	#on_exit [error_level]
-	function on_exit() {
-		#send log and errorlevel[success/errorr xy]
+	echo "### Enviroment ###"
+	echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
+	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	echo $'\n\n' >> "$log_file"
 
-		if [ "$1" != "0" ]; then
-			log_mail_subject="$log_mail_subject [ERROR]"
-		else
-			log_mail_subject="$log_mail_subject [Success]"
-		fi
+	echo $'### R U N ... ###\n' >> "$log_file"
 
-		#Mail Body:
-		for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
-			{
-				echo "$log_mail_subject"
-				echo $'####################################################################################\n\n'
-				cat "$log_file"
-			} | sendemail -s mail.stbv.bybn.de -f desinfect@bayern.de -t "$mail_aim" -u "$log_mail_subject" -o tls=no
-		done
-
-		[ "$1" != "0" ] && {
-			chroot_umount$distro "$chroot_path" 2> /dev/null
-			workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
-		}
-		exit $1
+	#check root
+	[ "`whoami`" == "root" ] || {
+	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
+	  on_exit 10 >> "$log_file"
 	}
 
-	{
-		[ -f "$log_file" ] || touch "$log_file"
-		tail -f "$log_file" --pid="$$" &
+	[ "$distro" != "" ] && distro="_$distro"
 
-		chroot_path="`mktemp -d`"
-		iso_extr_dir="`mktemp -d`"
+	# 2. Entpacke ISO
+	iso_extract "$iso_source" "$iso_extr_dir"
 
-		echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-		echo "MODE: newiso" >> "$log_file"
-		echo "HOST: `hostname`" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "### S e t t i n g s ###" >> "$log_file"
-		echo "#CD/DVD" >> "$log_file"
-		echo "iso_source=\"$iso_source\"" >> "$log_file"
-		echo "iso_destination=\"$iso_destination\"" >> "$log_file"
-		echo "iso_lable=\"$iso_lable\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#Filesystem (for pxe)"  >> "$log_file"
-		echo "filesystem_source=\"$filesystem_source\""  >> "$log_file"
-		echo "filesystem_destination=\"$filesystem_destination\""  >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#Network" >> "$log_file"
-		echo "proxy_host=\"$proxy_host\"" >> "$log_file"
-		echo "proxy_port=\"$proxy_port\"" >> "$log_file"
-		echo "domain=\"$domain\"" >> "$log_file"
-		echo "nameserver=\"$nameserver\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#remaster_script" >> "$log_file"
-		echo "distro=\"$distro\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "log_file=\"$log_file\""
-		echo "log_mail_source=\"$log_mail_source\""
-		echo "log_mail_aim=\"$log_mail_aim\""
-		echo "log_mail_subject=\"$log_mail_subject\""
-		echo ""
-
-		echo "#Sonstiges" >> "$log_file"
-		echo "tools_list=\"$tools_list\"" >> "$log_file"
-		echo $'\n' >> "$log_file"
-
-		echo "### Enviroment ###"
-		echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
-		echo "chroot_path=\"$chroot_path\"" >> "$log_file"
-		echo $'\n\n' >> "$log_file"
-
-		echo $'### R U N ... ###\n' >> "$log_file"
-
-		#check root
-		[ "`whoami`" == "root" ] || {
-			echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-			on_exit 10 >> "$log_file"
-		}
-
-		[ "$distro" != "" ] && distro="_$distro"
-
-		# 2. Entpacke ISO
-		iso_extract "$iso_source" "$iso_extr_dir"
-
-		# 3. Entpacken der Dateien des Live-Systems
-		filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-		[ -e "$filesystem_img" ] || {
-			echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
-			on_exit 15 >> "$log_file"
-		}
-
-		filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 4. Vorbereiten für chroot-Umgebung:
-
-		chroot_initial$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 5. Setzen der Netzwerk-Einstellungen:
-
-		proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 6. Updaten von Desinfec't:
-		os_update$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 7. Installation optionaler Tools:
-
-		tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		#addo ClamAV to conky_info
-		sed -i "s/\#\ \$\{color\ white\}/\ \$\{color\ white\}/g"  "$chroot_path/etc/skel/.conkyrc"
-
-		chroot_clean "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 8. Manuelle Aktionen - deaktiviert
-
-		#echo "Now You Have TIME to do something MANUALY!"
-		#echo "enter in shell: #> chroot $chroot_path /bin/bash"
-		#chroot $chroot_path /bin/bash
-		#echo "Are You Finisch? Then Press [ENTER]"
-
-		# 9. Umount - Chroot Umgebung auflösen
-
-		chroot_umount$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		#Überprüfen ob alles ausgehängt wurde
-		[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
-			echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
-			on_exit 21 >> "$log_file"
-		}
-
-		# 10. Packen und Ersetzen der Dateien des Live-Systems
-		rm "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-
-		# wenn filesystem gewünscht dann
-		[ "$filesystem_destination" != "" ] && {
-			#wen bereits forhanden dann löschen
-			[ -f "$filesystem_destination" ] && rm "$filesystem_destination"
-			cp "$filesystem_img" "$filesystem_destination" >> "$log_file"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-			chmod 666 "$filesystem_destination"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-		}
-
-		chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
-
-		workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-
-		on_exit 0
+	# 3. Entpacken der Dateien des Live-Systems
+	filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
+	[ -e "$filesystem_img" ] || {
+	  echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
+	  on_exit 15 >> "$log_file"
 	}
+
+	filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 4. Vorbereiten für chroot-Umgebung:
+
+	chroot_initial$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 5. Setzen der Netzwerk-Einstellungen:
+
+	proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 6. Updaten von Desinfec't:
+	os_update$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 7. Installation optionaler Tools:
+
+	tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	#addo ClamAV to conky_info
+	sed -i 's/# ${color white}ClamAV/ ${color white}ClamAV/g'  "$chroot_path/etc/skel/.conkyrc"
+
+	chroot_clean "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 8. Manuelle Aktionen - deaktiviert
+
+	#echo "Now You Have TIME to do something MANUALY!"
+	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	#chroot $chroot_path /bin/bash
+	#echo "Are You Finisch? Then Press [ENTER]"
+
+	# 9. Umount - Chroot Umgebung auflösen
+
+	chroot_umount$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	#Überprüfen ob alles ausgehängt wurde
+	[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
+	  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
+	  on_exit 21 >> "$log_file"
+	}
+
+	# 10. Packen und Ersetzen der Dateien des Live-Systems
+	rm "$filesystem_img" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# wenn iso gewünscht
+	[ "$iso_destination" != "" ] && {
+			iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
+			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+	}
+
+	# wenn filesystem gewünscht
+	[ "$filesystem_source" != "" ] && {
+	  #wen bereits forhanden dann löschen
+	  [ -f "$filesystem_source" ] && rm "$filesystem_source"
+	  cp "$filesystem_img" "$filesystem_source" >> "$log_file"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	  chmod 666 "$filesystem_source"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+	}
+
+	chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
+
+	workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+
+	on_exit 0
 }
 
 function main_desinfect_pxe_update() {
 
-	#####################################################################################
-	################## S e t t i n g s ##################################################
-	#####################################################################################
-	#Filesystem (from pxe)
-	filesystem_img="/data/remaster/result/filesystem.squashfs"
+	[ "$log_file" == "" ] && log_file="`mktemp`"
+	[ -f "$log_file" ] || touch "$log_file"
+	tail -f "$log_file" --pid="$$" &
 
-	#Network
-	domain="stmi.bayern.de"
-	nameserver="10.173.230.81,10.173.27.82"
+	chroot_path="`mktemp -d`"
 
-	#remaster_script
-	distro="desinfect2016"
+	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
+	echo "MODE: desinfect_pxe_update" >> "$log_file"
+	echo "HOST: `hostname`" >> "$log_file"
+	echo >> "$log_file"
 
-	#LOG
-	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@stbaro.bayern.de"
-	#log_mail_source="`hostname`@stbaro.bayern.de"
-	log_mail_aim="Martin.Huber@stbaro.bayern.de"
-	log_mail_subject="Desinfect_Remaster"
+	echo "### S e t t i n g s ###" >> "$log_file"
+	echo "#Filesystem (for pxe)"  >> "$log_file"
+	echo "filesystem_source=\"$filesystem_source\""
+	echo >> "$log_file"
 
-	#Sonstiges
-	tools_list="nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
+	echo "#Network" >> "$log_file"
+	echo "domain=\"$domain\"" >> "$log_file"
+	echo "nameserver=\"$nameserver\"" >> "$log_file"
+	echo >> "$log_file"
 
+	echo "#remaster_script" >> "$log_file"
+	echo "distro=\"$distro\"" >> "$log_file"
+	echo >> "$log_file"
 
+	echo "log_file=\"$log_file\""
+	echo "log_mail_source=\"$log_mail_source\""
+	echo "log_mail_aim=\"$log_mail_aim\""
+	echo "log_mail_subject=\"$log_mail_subject\""
+	echo ""
 
-	#####################################################################################
-	################## R u n ############################################################
-	#####################################################################################
+	echo "#Sonstiges" >> "$log_file"
+	echo "tools_list=\"$tools_list\"" >> "$log_file"
+	echo $'\n' >> "$log_file"
 
-	#on_exit [error_level]
-	function on_exit() {
-		#send log and errorlevel[success/errorr xy]
+	echo "### Enviroment ###"
+	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	echo $'\n\n' >> "$log_file"
 
-		if [ "$1" != "0" ]; then
-			log_mail_subject="$log_mail_subject [ERROR]"
-		else
-			log_mail_subject="$log_mail_subject [Success]"
-		fi
+	echo $'### R U N ... ###\n' >> "$log_file"
 
-		#Mail Body:
-		for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
-			{
-				echo "$log_mail_subject"
-				echo $'####################################################################################\n\n'
-				cat "$log_file"
-			} | sendemail -s mail.stbv.bybn.de -f desinfect@bayern.de -t "$mail_aim" -u "$log_mail_subject" -o tls=no
-		done
-
-		[ "$1" != "0" ] && {
-			chroot_umount$distro "$chroot_path" 2> /dev/null
-			workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
-		}
-
-		exit $1
+	#check root
+	[ "`whoami`" == "root" ] || {
+	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
+	  on_exit 10 >> "$log_file"
 	}
 
-	{
-		[ "$log_file" == "" ] && log_file="`mktemp`"
-		[ -f "$log_file" ] || touch "$log_file"
-		tail -f "$log_file" --pid="$$" &
+	[ "$distro" != "" ] && distro="_$distro"
 
-		chroot_path="`mktemp -d`"
-
-		echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-		echo "MODE: desinfect_pxe_update" >> "$log_file"
-		echo "HOST: `hostname`" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "### S e t t i n g s ###" >> "$log_file"
-		echo "#Filesystem (for pxe)"  >> "$log_file"
-		echo "filesystem_img=\"$filesystem_img\""
-		echo >> "$log_file"
-
-		echo "#Network" >> "$log_file"
-		echo "domain=\"$domain\"" >> "$log_file"
-		echo "nameserver=\"$nameserver\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#remaster_script" >> "$log_file"
-		echo "distro=\"$distro\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "log_file=\"$log_file\""
-		echo "log_mail_source=\"$log_mail_source\""
-		echo "log_mail_aim=\"$log_mail_aim\""
-		echo "log_mail_subject=\"$log_mail_subject\""
-		echo ""
-
-		echo "#Sonstiges" >> "$log_file"
-		echo "tools_list=\"$tools_list\"" >> "$log_file"
-		echo $'\n' >> "$log_file"
-
-		echo "### Enviroment ###"
-		echo "chroot_path=\"$chroot_path\"" >> "$log_file"
-		echo $'\n\n' >> "$log_file"
-
-		echo $'### R U N ... ###\n' >> "$log_file"
-
-		#check root
-		[ "`whoami`" == "root" ] || {
-			echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-			on_exit 10 >> "$log_file"
-		}
-
-		[ "$distro" != "" ] && distro="_$distro"
-
-		# 1. Entpacken der Dateien des Live-Systems
-		[ -e "$filesystem_img" ] || {
-			echo "### ERROR ### \"$filesystem_img\" does not exist!" >> "$log_file"
-			on_exit 15 >> "$log_file"
-		}
-
-		filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 2. Vorbereiten für chroot-Umgebung:
-
-		chroot_initial$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 3. Setzen der Netzwerk-Einstellungen:
-
-		dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 4. Updaten von Desinfec't:
-		os_update$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		# 5. Manuelle Aktionen - deaktiviert
-
-		#echo "Now You Have TIME to do something MANUALY!"
-		#echo "enter in shell: #> chroot $chroot_path /bin/bash"
-		#echo "Are You Finisch? Then Press [ENTER]"
-		#read
-
-		# 6. Umount - Chroot Umgebung auflösen
-
-		chroot_umount$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		#Überprüfen ob alles ausgehängt wurde
-		[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
-			echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
-			on_exit 21 >> "$log_file"
-		}
-
-		# 5. Packen und Ersetzen der Dateien
-		rm "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		chmod 777 "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		workspace_erase "$chroot_path/" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-
-		on_exit 0
+	# 1. Entpacken der Dateien des Live-Systems
+	[ -e "$filesystem_source" ] || {
+	  echo "### ERROR ### \"$filesystem_source\" does not exist!" >> "$log_file"
+	  on_exit 15 >> "$log_file"
 	}
+
+	filesystem_extract "$filesystem_source" "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 2. Vorbereiten für chroot-Umgebung:
+
+	chroot_initial$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 3. Setzen der Netzwerk-Einstellungen:
+
+	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 4. Updaten von Desinfec't:
+	os_update$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	# 5. Manuelle Aktionen - deaktiviert
+
+	#echo "Now You Have TIME to do something MANUALY!"
+	#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+	#echo "Are You Finisch? Then Press [ENTER]"
+	#read
+
+	# 6. Umount - Chroot Umgebung auflösen
+
+	chroot_umount$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	#Überprüfen ob alles ausgehängt wurde
+	[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
+	  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
+	  on_exit 21 >> "$log_file"
+	}
+
+	# 5. Packen und Ersetzen der Dateien
+	rm "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	filesystem_pack "$chroot_path"  "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	chmod 777 "$filesystem_source" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	workspace_erase "$chroot_path/" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+
+	on_exit 0
 }
 
 function main_test() {
+	[ "$log_file" == "" ] && log_file="`mktemp`"
+	[ -f "$log_file" ] || touch "$log_file"
+	tail -f "$log_file" --pid="$$" &
 
-	#####################################################################################
-	################## S e t t i n g s ##################################################
-	#####################################################################################
-	#CD/DVD
-	#entweder iso_source oder filesystem_source alls quelle
-	# -> bei iso gen erforderlich!
-	iso_source="/data/remaster/desinfect-2016.iso"
-	#destination optinal
-	iso_destination="/data/remaster/result/custom_desinfect_`date '+%Y-%m-%d'`.iso"
-	iso_lable="DESINFECT_`date '+%Y-%m-%d'`"
-
-	#Filesystem (for pxe)
-	#entweder iso_source oder filesystem_source alls quelle
-	filesystem_source=""
-	#destination optinal
-	filesystem_destination="/data/remaster/result/filesystem.squashfs"
-
-	#Network
-	proxy_host="www-proxy.bybn.de"
-	proxy_port="80"
-	domain="stmi.bayern.de"
-	nameserver="10.173.230.81,10.173.27.82"
-
-	#remaster_script
-	distro="desinfect2016"
-
-	#LOG
-	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@stbaro.bayern.de"
-	log_mail_aim="Martin.Huber@stbaro.bayern.de"
-	log_mail_subject="Desinfect_Remaster"
-
-	#Sonstiges
-	tools_list="nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
+	chroot_path="`mktemp -d`"
+	iso_extr_dir="`mktemp -d`"
 
 
+	echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
+	echo "MODE: main_test" >> "$log_file"
+	echo "HOST: `hostname`" >> "$log_file"
+	echo >> "$log_file"
 
-	#####################################################################################
-	################## R u n ############################################################
-	#####################################################################################
+	echo "### S e t t i n g s ###" >> "$log_file"
+	echo "#CD/DVD" >> "$log_file"
+	echo "iso_source=\"$iso_source\"" >> "$log_file"
+	echo "iso_destination=\"$iso_destination\"" >> "$log_file"
+	echo "iso_lable=\"$iso_lable\"" >> "$log_file"
+	echo >> "$log_file"
 
-	#on_exit [error_level]
-	function on_exit() {
-		#send log and errorlevel[success/errorr xy]
+	echo "#Filesystem (for pxe)"  >> "$log_file"
+	echo "filesystem_source=\"$filesystem_source\""
+	echo "filesystem_source=\"$filesystem_source\""
+	echo >> "$log_file"
 
-		if [ "$1" != "0" ]; then
-			log_mail_subject="$log_mail_subject [ERROR]"
-		else
-			log_mail_subject="$log_mail_subject [Success]"
-		fi
+	echo "#Network" >> "$log_file"
+	echo "proxy_host=\"$proxy_host\"" >> "$log_file"
+	echo "proxy_port=\"$proxy_port\"" >> "$log_file"
+	echo "domain=\"$domain\"" >> "$log_file"
+	echo "nameserver=\"$nameserver\"" >> "$log_file"
+	echo >> "$log_file"
 
-		#Mail Body:
-		for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
-			{
-				echo "$log_mail_subject"
-				echo $'####################################################################################\n\n'
-				cat "$log_file"
-			} | sendemail -s mail.stbv.bybn.de -f desinfect@bayern.de -t "$mail_aim" -u "$log_mail_subject" -o tls=no
-		done
+	echo "#remaster_script" >> "$log_file"
+	echo "distro=\"$distro\"" >> "$log_file"
+	echo >> "$log_file"
 
-		[ "$1" != "0" ] && {
-			chroot_umount$distro "$chroot_path" 2> /dev/null
-			workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
-		}
+	echo "log_file=\"$log_file\""
+	echo "log_mail_source=\"$log_mail_source\""
+	echo "log_mail_aim=\"$log_mail_aim\""
+	echo "log_mail_subject=\"$log_mail_subject\""
+	echo ""
 
-		exit $1
+	echo "#Sonstiges" >> "$log_file"
+	echo "tools_list=\"$tools_list\"" >> "$log_file"
+	echo $'\n' >> "$log_file"
+
+	echo "### Enviroment ###"
+	echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
+	echo "chroot_path=\"$chroot_path\"" >> "$log_file"
+	echo $'\n\n' >> "$log_file"
+
+	echo $'### R U N ... ###\n' >> "$log_file"
+
+
+	### Check Settings ####
+
+	# to ad
+	# to ad
+
+
+	# check script run with root
+	[ "`whoami`" == "root" ] || {
+	  echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
+	  on_exit 10 >> "$log_file"
 	}
 
-	{
-		[ "$log_file" == "" ] && log_file="`mktemp`"
-		[ -f "$log_file" ] || touch "$log_file"
-		tail -f "$log_file" --pid="$$" &
-
-		chroot_path="`mktemp -d`"
-		iso_extr_dir="`mktemp -d`"
+	[ "$distro" != "" ] && distro="_$distro"
 
 
-		echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-		echo "MODE: main_test" >> "$log_file"
-		echo "HOST: `hostname`" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "### S e t t i n g s ###" >> "$log_file"
-		echo "#CD/DVD" >> "$log_file"
-		echo "iso_source=\"$iso_source\"" >> "$log_file"
-		echo "iso_destination=\"$iso_destination\"" >> "$log_file"
-		echo "iso_lable=\"$iso_lable\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#Filesystem (for pxe)"  >> "$log_file"
-		echo "filesystem_source=\"$filesystem_source\""
-		echo "filesystem_destination=\"$filesystem_destination\""
-		echo >> "$log_file"
-
-		echo "#Network" >> "$log_file"
-		echo "proxy_host=\"$proxy_host\"" >> "$log_file"
-		echo "proxy_port=\"$proxy_port\"" >> "$log_file"
-		echo "domain=\"$domain\"" >> "$log_file"
-		echo "nameserver=\"$nameserver\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "#remaster_script" >> "$log_file"
-		echo "distro=\"$distro\"" >> "$log_file"
-		echo >> "$log_file"
-
-		echo "log_file=\"$log_file\""
-		echo "log_mail_source=\"$log_mail_source\""
-		echo "log_mail_aim=\"$log_mail_aim\""
-		echo "log_mail_subject=\"$log_mail_subject\""
-		echo ""
-
-		echo "#Sonstiges" >> "$log_file"
-		echo "tools_list=\"$tools_list\"" >> "$log_file"
-		echo $'\n' >> "$log_file"
-
-		echo "### Enviroment ###"
-		echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
-		echo "chroot_path=\"$chroot_path\"" >> "$log_file"
-		echo $'\n\n' >> "$log_file"
-
-		echo $'### R U N ... ###\n' >> "$log_file"
-
-
-		### Check Settings ####
-
-		# to ad
-		# to ad
-
-
-		# check script run with root
-		[ "`whoami`" == "root" ] || {
-			echo "### ERROR ### Remaster need ROOT permision!" >> "$log_file"
-			on_exit 10 >> "$log_file"
-		}
-
-		[ "$distro" != "" ] && distro="_$distro"
-
-
-		#If iso sorce & aim: entpake
-		[ "$iso_source" != "" ] && [ "$iso_destination" != "" ] && {
-			#Entpacke ISO
-			iso_extract "$iso_source" "$iso_extr_dir" >> "$log_file"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-		}
-
-		#If file source set
-		if [ "$filesystem_source" != "" ]; then
-			filesystem_img="$filesystem_source"
-		else
-			filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-			[ -e "$filesystem_img" ] || {
-				echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
-				on_exit 15 >> "$log_file"
-			}
-		fi
-
-		### Normal ###
-
-		### 3. Entpacken der Dateien des Live-Systems
-
-
-		filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		### 4. Vorbereiten für chroot-Umgebung:
-
-		chroot_initial$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		### 5. Setzen der Netzwerk-Einstellungen:
-
-		proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		### 6. Updaten von Desinfec't:
-		os_update$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		### 7. Installation optionaler Tools:
-
-		tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		chroot_clean "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		### 8. Umount - Chroot Umgebung auflösen
-
-		chroot_umount$distro "$chroot_path" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		#Überprüfen ob alles ausgehängt wurde
-		[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
-			echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
-			on_exit 21 >> "$log_file"
-		}
-
-		## Normal END ##
-
-		[ "$filesystem_destination" != "" ] && filesystem_img="$filesystem_destination"
-
-		### 9. Packen und Ersetzen der Dateien des Live-Systems
-		[ -f "$filesystem_img" ] && rm "$filesystem_img" 2>> "$log_file" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-
-		[ "$iso_destination" != "" ] && {
-			tmp_var_2143445="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-
-			[ "$tmp_var_2143445" != "$filesystem_img" ] && {
-				rm "$tmp_var_2143445" 2>> "$log_file" >> "$log_file"
-				cp "$filesystem_img" "$tmp_var_2143445"
-			}
-			tmp_var_2143445=
-
-			iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-			chmod 777 "$iso_destination"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-		}
-
-
-		# wenn filesystem gewünscht dann
-		[ "$filesystem_destination" != "" ] && {
-			chmod 777 "$filesystem_destination"
-			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-		}
-
-		workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
-		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-
-		on_exit 0
+	#If iso sorce & aim: entpake
+	[ "$iso_source" != "" ] && [ "$iso_destination" != "" ] && {
+	  #Entpacke ISO
+	  iso_extract "$iso_source" "$iso_extr_dir" >> "$log_file"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 	}
+
+	#If file source set
+	if [ "$filesystem_source" != "" ]; then
+	  filesystem_img="$filesystem_source"
+	else
+	  filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
+	  [ -e "$filesystem_img" ] || {
+	    echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
+	    on_exit 15 >> "$log_file"
+	  }
+	fi
+
+	### Normal ###
+
+	### 3. Entpacken der Dateien des Live-Systems
+
+
+	filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	### 4. Vorbereiten für chroot-Umgebung:
+
+	chroot_initial$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	### 5. Setzen der Netzwerk-Einstellungen:
+
+	proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	### 6. Updaten von Desinfec't:
+	os_update$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	### 7. Installation optionaler Tools:
+
+	tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	chroot_clean "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	### 8. Umount - Chroot Umgebung auflösen
+
+	chroot_umount$distro "$chroot_path" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	#Überprüfen ob alles ausgehängt wurde
+	[ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
+	  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
+	  on_exit 21 >> "$log_file"
+	}
+
+	## Normal END ##
+
+	[ "$filesystem_source" != "" ] && filesystem_img="$filesystem_source"
+
+	### 9. Packen und Ersetzen der Dateien des Live-Systems
+	[ -f "$filesystem_img" ] && rm "$filesystem_img" 2>> "$log_file" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	filesystem_pack "$chroot_path"  "$filesystem_img" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+
+	[ "$iso_destination" != "" ] && {
+	  tmp_var_2143445="`find  "$iso_extr_dir" -name filesystem.squashfs`"
+
+	  [ "$tmp_var_2143445" != "$filesystem_img" ] && {
+	    rm "$tmp_var_2143445" 2>> "$log_file" >> "$log_file"
+	    cp "$filesystem_img" "$tmp_var_2143445"
+	  }
+	  tmp_var_2143445=
+
+	  iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	  chmod 777 "$iso_destination"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+	}
+
+
+	# wenn filesystem gewünscht dann
+	[ "$filesystem_source" != "" ] && {
+	  chmod 777 "$filesystem_source"
+	  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+	}
+
+	workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
+	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+	on_exit 0
 }
 
 
 #####################################################################################
 ################## F u n c t i o n s ################################################
 #####################################################################################
+
+### Error Handlings ###
+
+#on_exit [error_level]
+function on_exit() {
+	#send log and errorlevel[success/errorr xy]
+
+	if [ "$1" != "0" ]; then
+		log_mail_subject="$log_mail_subject [ERROR]"
+	else
+		log_mail_subject="$log_mail_subject [Success]"
+	fi
+
+	#Mail Body:
+	for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
+		{
+			echo "$log_mail_subject"
+			echo $'####################################################################################\n\n'
+			cat "$log_file"
+		} | sendemail -s mail.stbv.bybn.de -f desinfect@bayern.de -t "$mail_aim" -u "$log_mail_subject" -o tls=no
+	done
+
+	[ "$1" != "0" ] && {
+		chroot_umount$distro "$chroot_path" 2> /dev/null
+		workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
+	}
+	exit $1
+}
+
+#error_code [error_level]
+function error_code() {
+	code="$1"
+ 	case $code in
+  	"")
+			echo $'ID:\tDescription\n----------------------------------------------------\n1\tAllgemeiner Fehler\n2\tNo Paramters / wrong parameters'
+			echo $'3\tWrong Settings\n4\tProgramm missing\n\n10\tno root\n11\tfile no found\n12\tdir not found\n13\tcant create/delete file/dir'
+			echo $'14\tcorrupt file (unsquashfs, mount iso, ...)\n15\twrong file (iso has no squashfs-file ...)\n\n20\tmount error\n21\tunmoun error\n22\twrong filesystem'
+			;;
+		1)
+			echo "Allgemeiner Fehler"
+			;;
+		2)
+			echo "No Paramters / wrong parameters"
+  		;;
+  	3)
+  		echo "Wrong Settings"
+  		;;
+  	4)
+  		echo "Programm missing"
+  		;;
+  	10)
+  		echo "not executed as Root"
+  		;;
+  	11)
+  		echo "file no found"
+  		;;
+  	12)
+  		echo "dir not found"
+  		;;
+  	13)
+  		echo "cant create/delete file/dir"
+  		;;
+  	14)
+  		echo "corrupt file (unsquashfs, mount iso, ...)"
+  		;;
+  	15)
+  		echo "wrong file (iso has no squashfs-file ...)"
+  		;;
+  	20)
+  		echo "tmount error"
+  		;;
+  	21)
+  		echo "unmoun error"
+  		;;
+  	22)
+  		echo "wrong filesystem"
+  		;;
+  	*)
+  		echo $'No Defined Error Code.\nPerhaps an Error ocure on a Command wich was started by this Skritp.'
+  		;;
+	esac
+}
 
 ### Workspace ###
 
@@ -679,7 +604,7 @@ function filesystem_extract() {
 	}
 
 	[ "`filesystem_get_type $chroot_path`" != "ext4" ] && [ "`filesystem_get_type $chroot_path`" != "btrfs" ] && {
-		echo "### ERROR ### filesystem_extract: incorect filesystem (`filesystem_get_type $chroot_path`)!"
+		echo "### ERROR ### filesystem_extract: wrong filesystem (`filesystem_get_type $chroot_path`)!"
 		return 22
 	}
 
@@ -1699,11 +1624,9 @@ function tools_add_desinfect2017() {
 
 ### Handle Parameters & Modes ###
 
+#wenn kein modus angegebnen: default modus
 if [ -z "$1" ]; then
-	main_newiso
-	#main_desinfect_pxe_update
-	#main_test
-
+	main_$modus_default
 else
 	main_$1
 fi
