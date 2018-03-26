@@ -1,7 +1,7 @@
 #!/bin/bash
-#@version 1.5.2
-#@autor 6543@email.clocal
-#@date 2016-09-12
+#@version 1.6.0
+#@autor Martin.Huber@stbaro.bayern.de
+#@date 2017-06-14
 
 
 ### Modes ###
@@ -14,7 +14,7 @@ function main_newiso() {
 	#CD/DVD
 	#entweder iso_source oder filesystem_source alls quelle
 	# -> bei iso gen erforderlich!
-	iso_source="/data/remaster/desinfect-2016.iso"
+	iso_source="/data/remaster/desinfect-2017.iso"
 	#destination optinal
 	iso_destination="/data/remaster/result/custom_desinfect_`date '+%Y-%m-%d'`.iso"
 	iso_lable="DESINFECT_`date '+%Y-%m-%d'`"
@@ -32,7 +32,7 @@ function main_newiso() {
 	nameserver="10.x.x.2,10.x.x.1"
 
 	#remaster_script
-	distro="desinfect2016"
+	distro="desinfect2017"
 
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
@@ -41,7 +41,7 @@ function main_newiso() {
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
-	tools_list="nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan apt-transport-https"
+	tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan apt-transport-https"
 
 
 
@@ -161,9 +161,6 @@ function main_newiso() {
 		dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-		echo JEZ PATCH apt-transport-https
-		chroot "$chroot_dir" /bin/bash
-
 		# 6. Updaten von Desinfec't:
 		os_update$distro "$chroot_path" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -173,8 +170,8 @@ function main_newiso() {
 		tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-		echo JEZ Upgrade OS
-		chroot "$chroot_dir" /bin/bash
+		#addo ClamAV to conky_info
+		sed -i "s/\#\ \$\{color\ white\}/\ \$\{color\ white\}/g"  "$chroot_path/etc/skel/.conkyrc"
 
 		chroot_clean "$chroot_path" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -183,8 +180,8 @@ function main_newiso() {
 
 		#echo "Now You Have TIME to do something MANUALY!"
 		#echo "enter in shell: #> chroot $chroot_path /bin/bash"
+		#chroot $chroot_path /bin/bash
 		#echo "Are You Finisch? Then Press [ENTER]"
-		#read
 
 		# 9. Umount - Chroot Umgebung auflösen
 
@@ -214,12 +211,12 @@ function main_newiso() {
 			[ -f "$filesystem_destination" ] && rm "$filesystem_destination"
 			cp "$filesystem_img" "$filesystem_destination" >> "$log_file"
 			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-			
-			chmod 777 "$filesystem_destination"
+
+			chmod 666 "$filesystem_destination"
 			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 		}
-		
-		chmod 777 "$iso_destination" "$filesystem_img" >> "$log_file"
+
+		chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
 
 		workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -238,16 +235,17 @@ function main_desinfect_pxe_update() {
 	filesystem_img="/data/remaster/result/filesystem.squashfs"
 
 	#Network
-	domain="local"
-	nameserver="10.x.x.1,10.x.x.2"
+	domain="stmi.bayern.de"
+	nameserver="10.173.230.81,10.173.27.82"
 
 	#remaster_script
 	distro="desinfect2016"
 
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@email.clocal"
-	log_mail_aim="6543@email.clocal"
+	log_mail_source="desinfect@stbaro.bayern.de"
+	#log_mail_source="`hostname`@stbaro.bayern.de"
+	log_mail_aim="Martin.Huber@stbaro.bayern.de"
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
@@ -415,23 +413,23 @@ function main_test() {
 	filesystem_destination="/data/remaster/result/filesystem.squashfs"
 
 	#Network
-	proxy_host="proxy.local"
-	proxy_port="8080"
-	domain="local"
-	nameserver="10.x.x.1,10.x.x.2"
+	proxy_host="www-proxy.bybn.de"
+	proxy_port="80"
+	domain="stmi.bayern.de"
+	nameserver="10.173.230.81,10.173.27.82"
 
 	#remaster_script
-	distro="desinfect2016"	
-	
+	distro="desinfect2016"
+
 	#LOG
 	log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-	log_mail_source="desinfect@email.clocal"
-	log_mail_aim="6543@email.clocal"
+	log_mail_source="desinfect@stbaro.bayern.de"
+	log_mail_aim="Martin.Huber@stbaro.bayern.de"
 	log_mail_subject="Desinfect_Remaster"
 
 	#Sonstiges
 	tools_list="nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
-	
+
 
 
 	#####################################################################################
@@ -441,7 +439,7 @@ function main_test() {
 	#on_exit [error_level]
 	function on_exit() {
 		#send log and errorlevel[success/errorr xy]
-		
+
 		if [ "$1" != "0" ]; then
 			log_mail_subject="$log_mail_subject [ERROR]"
 		else
@@ -556,7 +554,7 @@ function main_test() {
 		### Normal ###
 
 		### 3. Entpacken der Dateien des Live-Systems
-		
+
 
 		filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
 		error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -611,7 +609,7 @@ function main_test() {
 
 		[ "$iso_destination" != "" ] && {
 			tmp_var_2143445="`find  "$iso_extr_dir" -name filesystem.squashfs`"
-			
+
 			[ "$tmp_var_2143445" != "$filesystem_img" ] && {
 				rm "$tmp_var_2143445" 2>> "$log_file" >> "$log_file"
 				cp "$filesystem_img" "$tmp_var_2143445"
@@ -627,7 +625,7 @@ function main_test() {
 
 
 		# wenn filesystem gewünscht dann
-		[ "$filesystem_destination" != "" ] && {			
+		[ "$filesystem_destination" != "" ] && {
 			chmod 777 "$filesystem_destination"
 			error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 		}
@@ -767,7 +765,7 @@ function iso_extract() {
 	[ -d "$iso_extr_dir" ] && {
 		rm -r "$iso_extr_dir/"
 		mkdir "$iso_extr_dir"
-	} 
+	}
 
 	#copy files ...
 	mount -o loop,ro "$iso_source" "$tmpdir"
@@ -794,7 +792,7 @@ function iso_create() {
 
 	xorriso -as mkisofs -graft-points -c isolinux/boot.cat -b isolinux/isolinux.bin \
 	-no-emul-boot -boot-info-table -boot-load-size 4 -isohybrid-mbr \
-	"$chroot_path/usr/lib/syslinux/isohdpfx.bin" \
+	"$iso_extr_dir/isolinux/isolinux.bin" \
 	-eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
 	-isohybrid-gpt-basdat -V "$iso_lable" \
 	-o "$iso_destination" \
@@ -836,6 +834,18 @@ function iso_create_desinfect2016() {
 	#wget http://www.heise.de/ct/projekte/desinfect/des15/initrd.lz -O "$iso_extr_dir/casper/initrd.lz"
 
 	#echo "done"
+
+	iso_create  "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable"
+}
+
+#iso_create_desinfect2017 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
+function iso_create_desinfect2017() {
+	#echo "prepere iso folder ... "
+
+	chroot_path="$1"
+	iso_extr_dir="$2"
+	iso_destination="$3"
+	iso_lable="$4"
 
 	iso_create  "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable"
 }
@@ -910,16 +920,25 @@ function chroot_initial_desinfect2016() {
 	echo "done"
 }
 
+#chroot_initial_desinfect2017 [chroot_dir]
+function chroot_initial_desinfect2017() {
+	#$1 = chroot dir
+
+	chroot_initial "$1"
+
+}
+
+
 #chroot_clean [chroot_dir]
 function chroot_clean() {
 	echo "clean chroot ... "
 
 	chroot_dir="$1"
 
-	chroot "$chroot_dir" /bin/bash -c "apt-get clean" 
-	chroot "$chroot_dir" /bin/bash -c "rm -r /var/cache/apt/*" 
-	chroot "$chroot_dir" /bin/bash -c "apt-get update" 
-	chroot "$chroot_dir" /bin/bash -c "apt-get check" 
+	chroot "$chroot_dir" /bin/bash -c "apt-get clean"
+	chroot "$chroot_dir" /bin/bash -c "rm -r /var/cache/apt/*"
+	chroot "$chroot_dir" /bin/bash -c "apt-get update"
+	chroot "$chroot_dir" /bin/bash -c "apt-get check"
 
 	echo "done"
 }
@@ -990,8 +1009,14 @@ function chroot_umount_desinfect2016() {
       	echo "### ERROR ### chroot_umount_desinfect: can't umount \"$chroot_dir/var/kl/bases_rd\"!"
       	#return 21
     }
-	
+
 	echo "done"
+}
+
+#chroot_umount_desinfect2017 [chroot_dir]
+function chroot_umount_desinfect2017() {
+	#call main mount
+	chroot_umount "$1"
 }
 
 #chroot_is_mounted [chroot_dir]
@@ -1026,9 +1051,9 @@ function proxy_enable() {
 
 	#Wenn alle drei Parameter gegeben
 	if [ "$proxy_host" != "" ] && [ "$proxy_port" != "" ] ; then
-		echo "http_proxy=http://$proxy_host:$proxy_port" >> $chroot_dir/etc/environment
-		echo "https_proxy=http://$proxy_host:$proxy_port" >> $chroot_dir/etc/environment
-		echo "ftp_proxy=http://$proxy_host:$proxy_port" >> $chroot_dir/etc/environment
+		echo "http_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+		echo "https_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+		echo "ftp_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
 
 		echo "Acquire::http::Proxy  \"http://$proxy_host:$proxy_port\"\;" > $chroot_dir/etc/apt/apt.conf.d/90proxy
 		echo "Acquire::ftp::Proxy \"ftp://$proxy_host:$proxy_port\"\;" >> $chroot_dir/etc/apt/apt.conf.d/90proxy
@@ -1104,7 +1129,7 @@ function proxy_enable_desinfect2016() {
 	cat "$chroot_dir/etc/opt/eset/esets/esets.cfg" | grep -v "proxy_addr" | grep -v "proxy_port" > "$tmp_file_344532"
 	rm "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 	cp "$tmp_file_344532" "$chroot_dir/etc/opt/eset/esets/esets.cfg"
-	
+
 	echo "proxy_addr = \"$proxy_host\"" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 	echo "proxy_port = $proxy_port" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
 
@@ -1118,6 +1143,78 @@ function proxy_enable_desinfect2016() {
 
 	echo "done"
 }
+
+#proxy_enable_desinfect2017 [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable_desinfect2017() {
+
+	proxy_enable $1 $2 $3
+
+	echo -n "enable proxy for desinfect's av ... "
+
+	chroot_dir="$1"
+	proxy_host="$2"
+	proxy_port="$3"
+	tmp_file_344532="`mktemp`"
+
+	#Avast AntiVirus
+	if [ -f "$chroot_dir/AntiVirUpdate/avupdate" ]; then
+		echo "Avast AntiVirus: Found"
+		sed -i "s/--skip-master-file/--skip-master-file --proxy-host=$proxy_host --proxy-port=$proxy_port/g" "$chroot_dir/AntiVirUpdate/avupdate"
+		sed -i "s/--proxy-host=$proxy_host --proxy-port=$proxy_port --proxy-host=$proxy_host --proxy-port=$proxy_port/--proxy-host=$proxy_host --proxy-port=$proxy_port/g" "$chroot_dir/AntiVirUpdate/avupdate"
+	else
+		eco "Avast AntiVirus: NOT Found"
+	fi
+
+	#Eset AV
+	if [ -f "$chroot_dir/etc/opt/eset/esets/esets.cfg" ]; then
+		echo "Eset AV: Found"
+		cat "$chroot_dir/etc/opt/eset/esets/esets.cfg" | grep -v "proxy_addr" | grep -v "proxy_port" > "$tmp_file_344532"
+		rm "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+		cp "$tmp_file_344532" "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+
+		echo "proxy_addr = \"$proxy_host\"" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+		echo "proxy_port = $proxy_port" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+	else
+		eco "Eset AV: NOT Found"
+	fi
+
+	#ClamAV
+	if [ -f "$chroot_dir/etc/clamav/freshclam.conf" ]; then
+		echo "ClamAV: Found"
+		cat "$chroot_dir/etc/clamav/freshclam.conf" | grep -v "HTTPProxyServer" | grep -v "HTTPProxyPort" > "$tmp_file_344532"
+		rm "$chroot_dir/etc/clamav/freshclam.conf"
+		cp "$tmp_file_344532" "$chroot_dir/etc/clamav/freshclam.conf"
+
+		echo "HTTPProxyServer $proxy_host" >> "$chroot_dir/etc/clamav/freshclam.conf"
+		echo "HTTPProxyPort $proxy_port" >> "$chroot_dir/etc/clamav/freshclam.conf"
+	else
+		eco "ClamAV: NOT Found"
+	fi
+
+	#Sophos
+	if [ -f ""$chroot_dir/opt/sophos-av/etc/savd.cfg"" ]; then
+		echo "Sophos: Found"
+		echo "<Source>sophos:</Source><Proxy><Address>http://www-proxy.bybn.de:80</Proxy></Address>" >> "$chroot_dir/opt/sophos-av/etc/savd.cfg"
+	else
+		eco "Sophos: NOT Found"
+	fi
+
+	#F-Secure
+	if [ -f "$chroot_dir/opt/f-secure/fsaua/fsaua_config.template" ]; then
+		echo "F-Secure: Found"
+		echo "update_server=http://www-proxy.bybn.de:80" >> "$chroot_dir/opt/f-secure/fsaua/fsaua_config"
+		#..
+	else
+		eco "F-Secure: NOT Found"
+	fi
+
+
+	rm "$tmp_file_344532"
+	tmp_file_344532=
+
+	echo "done"
+}
+
 
 ### dns
 #dns_set [chroot_dir] [domain] [nameserver]
@@ -1205,6 +1302,37 @@ function sourcelist_desinfect_set_nomal2016() {
 	echo "done"
 }
 
+#sourcelist_desinfect_set_nomal2017 [chroot_dir]
+function sourcelist_desinfect_set_nomal2017() {
+	echo -n "build normal source.list ... "
+	#$1 = chroot directory
+
+	sourcelist="$1/etc/apt/sources.list"
+
+
+	echo "#### Desinfe't 2017 ####" > "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "deb http://www.heise.de/ct/projekte/desinfect/ubuntu 2017 main" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "# #### Ubuntu 16.04 LTS (Xenial) ####" >> "$sourcelist"
+	echo "#" >> "$sourcelist"
+	echo "# deb http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse" >> "$sourcelist"
+	echo "# deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse" >> "$sourcelist"
+	echo "#" >> "$sourcelist"
+	echo "# deb http://security.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse" >> "$sourcelist"
+	echo "# deb-src http://security.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse" >> "$sourcelist"
+	echo "#" >> "$sourcelist"
+	echo "# deb http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse" >> "$sourcelist"
+	echo "# deb-src http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse" >> "$sourcelist"
+	echo "#" >> "$sourcelist"
+	echo "# ## This software is not part of Ubuntu, but is offered by third-party" >> "$sourcelist"
+	echo "# ## developers who want to ship their latest software." >> "$sourcelist"
+	echo "# deb http://extras.ubuntu.com/ubuntu xenial main" >> "$sourcelist"
+
+	echo "done"
+}
+
 #sourcelist_desinfect_set_extendet2015 [chroot_dir]
 function sourcelist_desinfect_set_extendet2015() {
 	echo -n "build extendet source.list ... "
@@ -1267,6 +1395,36 @@ function sourcelist_desinfect_set_extendet2016() {
 	echo "## This software is not part of Ubuntu, but is offered by third-party" >> "$sourcelist"
 	echo "## developers who want to ship their latest software." >> "$sourcelist"
 	echo "deb http://extras.ubuntu.com/ubuntu trusty main" >> "$sourcelist"
+
+	echo "done"
+}
+
+#sourcelist_desinfect_set_extendet2017 [chroot_dir]
+function sourcelist_desinfect_set_extendet2017() {
+	echo -n "build extendet source.list ... "
+
+	sourcelist="$1/etc/apt/sources.list"
+
+
+	echo "#### Desinfe't 2017 ####" > "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "deb http://www.heise.de/ct/projekte/desinfect/ubuntu 2017 main" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "#### Ubuntu 16.04 LTS (Xenial) ####" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "deb http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse" >> "$sourcelist"
+	echo "deb-src http://archive.ubuntu.com/ubuntu xenial main restricted universe multiverse" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "deb http://security.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse" >> "$sourcelist"
+	echo "deb-src http://security.ubuntu.com/ubuntu xenial-updates main restricted universe multiverse" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "deb http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse" >> "$sourcelist"
+	echo "deb-src http://security.ubuntu.com/ubuntu xenial-security main restricted universe multiverse" >> "$sourcelist"
+	echo "" >> "$sourcelist"
+	echo "## This software is not part of Ubuntu, but is offered by third-party" >> "$sourcelist"
+	echo "## developers who want to ship their latest software." >> "$sourcelist"
+	echo "deb http://extras.ubuntu.com/ubuntu xenial main" >> "$sourcelist"
 
 	echo "done"
 }
@@ -1366,7 +1524,7 @@ function os_update_desinfect2016() {
 		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets restart"
 		sleep 2
 		chroot "$chroot_dir" /bin/bash -c "/opt/eset/esets/sbin/esets_daemon --update"
-		
+
 		#warten auf daemon update ...
 		sleep 10m
 		echo "wait 10min for Eset AV update"
@@ -1408,6 +1566,85 @@ function os_update_desinfect2016() {
 	echo "update virus definitions done"
 }
 
+#os_update_desinfect2017 [chroot_dir]
+function os_update_desinfect2017() {
+	#$1 = chroot directory
+
+	chroot_dir="$1"
+
+	#call main os_update
+	os_update "$chroot_dir"
+
+	echo "update virus definitions ... "
+
+	#Avast Avira
+	{
+		echo "Avira ..."
+		chroot "$chroot_dir" /bin/bash -c "/AntiVirUpdate/avupdate" | grep -v " -> "
+		echo "Avira done"
+	}
+
+	#Clam AV
+	{
+		echo "ClamAV..."
+		chroot "$chroot_dir" /bin/bash -c "freshclam" > /dev/null
+		rm -f "$chroot_dir/var/lib/clamav/daily.cld"
+		echo "ClamAV done"
+	}
+
+	#Eset AV
+	{
+		echo "Eset AV ..."
+		tmp_file_23421="`mktemp`"
+		cat "$chroot_dir/etc/opt/eset/esets/esets.cfg" | grep -v "av_update_username" | grep -v "av_update_password" > "$tmp_file_23421"
+		cat "$tmp_file_23421" > "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+		chroot "$chroot_dir" /bin/bash -c "/usr/bin/esetrand" >> "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+
+		echo "set timeout: 2min"
+		av_eaet_timeout=1200
+		tmp_var_3092="`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`"
+
+		#eig. update routine
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets restart"
+		sleep 2
+		chroot "$chroot_dir" /bin/bash -c "/opt/eset/esets/sbin/esets_daemon --update"
+
+		#warten auf daemon update ...
+		sleep 10m
+		echo "wait 10min for Eset AV update"
+		while [ "`chroot "$chroot_dir" /bin/bash -c "/opt/desinfect/conky_info.sh eset"`" == "$tmp_var_3092" ]; do
+			sleep 1
+			av_eaet_timeout=$((av_eaet_timeout-1))
+			[ $av_eaet_timeout -gt 0 ] || tmp_var_3092=
+		done
+
+		sleep 4
+
+		chroot "$chroot_dir" /bin/bash -c "/etc/init.d/esets stop"
+
+		cat "$tmp_file_23421" > "$chroot_dir/etc/opt/eset/esets/esets.cfg"
+
+		rm "$tmp_file_23421"
+		tmp_file_23421=
+		tmp_var_3092=
+		echo "Eset AV done"
+	}
+
+	#Sophos
+	{
+		echo "Sophos..."
+		chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3"
+		#chroot "$chroot_dir" /bin/bash -c "/opt/sophos-av/bin/savupdate -v3 -a"
+		echo "Sophos done"
+	}
+
+	#F-Secure
+
+
+	echo "update virus definitions done"
+}
+
+
 ### Tools ###
 
 #tools_add [chroot_dir] [tools_list]
@@ -1448,13 +1685,25 @@ function tools_add_desinfect2016() {
 	sourcelist_desinfect_set_nomal2016 "$chroot_dir"
 }
 
+#tools_add_desinfect2017 [chroot_dir] [tools_list]
+function tools_add_desinfect2017() {
+	#$1 = chroot directory
+	chroot_dir="$1"
+	tools_list="$2"
+
+	sourcelist_desinfect_set_extendet2017 "$chroot_dir"
+	tools_add "$chroot_dir" "$tools_list"
+	sourcelist_desinfect_set_nomal2017 "$chroot_dir"
+}
+
+
 ### Handle Parameters & Modes ###
 
 if [ -z "$1" ]; then
 	main_newiso
 	#main_desinfect_pxe_update
 	#main_test
-	
+
 else
 	main_$1
 fi
