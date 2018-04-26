@@ -1,7 +1,8 @@
 #!/bin/bash
-#@version 1.8.1
-#@autor Martin.Huber@obermui.de
-#@date 2017-07-04
+#@version 1.9.0
+#@autor 6543@obermui.de
+#@date 2018-03-26
+#@licence GNUv3
 
 #####################################################################################
 ################## S e t t i n g s ##################################################
@@ -39,7 +40,7 @@ log_mail_aim="6543@email.clocal"
 log_mail_subject="Desinfect_Remaster"
 
 #Sonstiges
-tools_list="clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
+tools_list="xrdp clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
 
 
 #####################################################################################
