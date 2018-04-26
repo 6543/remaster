@@ -1,0 +1,20 @@
+Erorr Liste:
+
+ID:		Description
+----------------------------------------------------
+1		Allgemeiner Fehler
+2		No Paramters / wrong parameters
+3		Wrong Settings!
+4		Programm missing
+
+10		no root
+11		file no found
+12		dir not found
+13		cant create/delete file/dir
+14		corrupt file (unsquashfs, mount iso, ...)
+15		wrong file (iso has no squashfs-file ...)
+
+
+20		mount error
+21		unmoun error
+22		incorrect filesystem
