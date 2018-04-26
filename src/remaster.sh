@@ -1,47 +1,36 @@
 #!/bin/bash
-#@version 1.9.0
+#@version 1.9.1
 #@autor 6543@obermui.de
-#@date 2018-03-26
+#@date 2018-04-26
 #@licence GNUv3
 
 #####################################################################################
 ################## S e t t i n g s ##################################################
 #####################################################################################
+#get base dir
+rootdir=`echo $0 | rev | cut -d "/" -f 2- | rev`/../../
+rootdir=`readlink -e $rootdir`
 
-## MODUS
-modus_default="update_pxe"
+#set functions
+if [ -p "$rootdir/usr/lib/remaster/" ]; then
+	#source "$rootdir/usr/lib/remaster/" ...
+	export PATH="$rootdir/usr/lib/remaster/":$PATH
+else
+	echo "ERROR functions not found"
+	exit 1
+fi
 
-#CD/DVD
-#entweder iso_source oder filesystem_source alls quelle
-# -> bei iso gen erforderlich!
-iso_source="/data/remaster/desinfect-2017.iso"
-#destination optinal
-iso_destination="/data/remaster/result/custom_desinfect_`date '+%Y-%m-%d'`.iso"
-iso_lable="DESINFECT_`date '+%Y-%m-%d'`"
-
-#Filesystem (for pxe)
-#entweder iso_source oder filesystem_source alls quelle
-filesystem_source="/data/remaster/result/filesystem.squashfs"
-
-#Network
-proxy_host="proxy.local"
-proxy_port="8080"
-domain="local"
-nameserver="10.x.x.2,10.x.x.1"
-
-#remaster_script
-distro="desinfect2017"
-
-#LOG
-log_file="/data/remaster/logs/`date '+%Y-%m-%d'`.log"
-log_mail_source="desinfect@email.clocal"
-log_mail_smtp="smtp.mail.local:25"
-log_mail_aim="6543@email.clocal"
-log_mail_subject="Desinfect_Remaster"
-
-#Sonstiges
-tools_list="xrdp clamav nano htop nmon iftop tmux dsniff nmap openssh-server tightvncserver rsync e2fsprogs foremost gddrescue recoverjpeg safecopy sleuthkit testdisk arp-scan"
-
+#read main setting
+if [ -f "$rootdir/etc/remaster/config.cfg"]; then
+	source "$rootdir/etc/remaster/config.cfg"
+else
+	if [ -f "$rootdir/etc/remaster/config.sample.cfg"]; then
+		source "$rootdir/etc/remaster/config.sample.cfg"
+	else
+		echo "ERROR config not found"
+		exit 1
+	fi
+fi
 
 #####################################################################################
 ################## M o d e s ########################################################
