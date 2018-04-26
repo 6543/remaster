@@ -1,9 +1,23 @@
 # remaster
 
-for testing ...
+in restructure at the moment ...
 
+# Description
+The aim of this Project is to create a deamon for a server,
+wich update live systems.
+You should only have to install the modules for different OS/Live-Projects.
+It also set the right network settings (Proxy, DNS, ...)
+and will be extendible wit PXE menue.
+additional: Web Interface (Create/Change/Deltete Jobs; Download Latest Isos; Start/Stop PXE Server)
 
-This script updates/change Live Linux CDs
-(At the moment only Ubuntu/Debian; Desinfect15,16)
+# ToDo
+ * general struktur
+ * split into mudules
+ * more OS
+ * make it mor felexible
+ * ... (look at issues)
 
-Perhaps this will be split in parts and an config file in /etc/remaster/ controls it ...
+# At the Moment
+ * Ubuntu/Debian
+ * Desinfect17
+ * no config file (all setings in skript header)
