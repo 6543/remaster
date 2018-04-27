@@ -146,6 +146,11 @@ function main_renew() {
 	#chroot $chroot_path /bin/bash
 	#echo "Are You Finisch? Then Press [ENTER]"
 
+	#config xrdp to start xfce
+	echo '#!/bin/sh' > "$chroot_path"/etc/xrdp/startwm.sh
+	echo "export LANG=\"de_DE.UTF-8\"" >> "$chroot_path"/etc/xrdp/startwm.sh
+	echo "startxfce4" >> "$chroot_path"/etc/xrdp/startwm.sh
+
 	# 9. Umount - Chroot Umgebung auflösen
 
 	chroot_umount$distro "$chroot_path" >> "$log_file"
@@ -458,6 +463,7 @@ function main_update_iso() {
 
 	chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
 
+	#11. End
 	workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
 	error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
@@ -799,12 +805,10 @@ function iso_create_desinfect2017() {
 function chroot_initial() {
 	echo -n "initial chroot ... "
 
-	#$1 = chroot_dir
-
 	#check chroot dir
 	chroot_dir="$1"
 	[ -d "$chroot_dir" ] || {
-		echo "### ERROR ### chroot_initial: chroot directory not exist!"
+		echo "### ERROR ### chroot_initial: chroot directory not exist"
 		return 12
 	}
 
@@ -836,6 +840,7 @@ function chroot_initial_desinfect2015() {
 	}
 
 	#mount virus definitions
+	#bitdefender
 	mount --bind $chroot_dir/opt/BitDefender-scanner/var/lib/scan{.orig,}
 	mount --bind $chroot_dir/var/kl/bases_rd{.orig,}
 
@@ -981,7 +986,7 @@ function chroot_sh() {
 	#check chroot dir
 	chroot_dir="$1"
 	[ -d "$chroot_dir" ] || {
-		echo "### ERROR ### chroot_umount: chroot directory not exist!"
+		echo "### ERROR ### chroot_sh: chroot directory not exist!"
 		return 12
 	}
 
