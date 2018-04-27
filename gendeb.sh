@@ -28,6 +28,7 @@ for i in dist functions mods; do
 done
 
 # setting
+mkdir -p $rootdir/etc/remaster/
 cp -v src/config.sample.cfg $rootdir/etc/remaster/config.sample.cfg
 
 

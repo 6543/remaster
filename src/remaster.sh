@@ -9,7 +9,7 @@
 #####################################################################################
 #get base dir
 rootdir=`echo $0 | rev | cut -d "/" -f 2- | rev`/../../
-rootdir=`readlink -e $rootdir`
+export "rootdir=`readlink -e $rootdir`""
 
 #set functions
 if [ -p "$rootdir/usr/lib/remaster/" ]; then
