@@ -9,12 +9,13 @@
 #####################################################################################
 #get base dir
 rootdir=`echo $0 | rev | cut -d "/" -f 2- | rev`/../../
-export "rootdir=`readlink -e $rootdir`""
+export "rootdir=`readlink -e $rootdir`"
 
 #set functions
 if [ -p "$rootdir/usr/lib/remaster/" ]; then
 	#source "$rootdir/usr/lib/remaster/" ...
 	export PATH="$rootdir/usr/lib/remaster/":$PATH
+	export LIBDIR="$rootdir/usr/lib/remaster/"
 else
 	echo "ERROR functions not found"
 	exit 1
