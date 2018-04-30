@@ -1,0 +1,25 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#chroot_sh [chroot_dir] [command]
+function chroot_sh() {
+	#check chroot dir
+	chroot_dir="$1"
+	[ -d "$chroot_dir" ] || {
+		echo "### ERROR ### chroot_sh: chroot directory not exist!"
+		return 12
+	}
+
+	command="$2"
+
+	[ -f "$chroot_dir/tmp/env.sh" ] || {
+		#if not exist create environment skript
+		cat "$chroot_dir/etc/environment" | grep -v "#" | grep "=" > "$chroot_dir/tmp/env"
+		while read line; do echo export $line; done < "$chroot_dir/tmp/env" > "$chroot_dir/tmp/env.sh"
+		chmod +x "$chroot_dir/tmp/env.sh" && rm "$chroot_dir/tmp/env"
+	}
+
+	chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; $command"
+}

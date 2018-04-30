@@ -1,0 +1,18 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#chroot_is_mounted [chroot_dir]
+#(Boolean)-> true | false
+function chroot_is_mounted() {
+	#$1 = chroot directory
+
+	if [ "`mount | grep "$1"`" != "" ] ; then
+		#ther is smething mounted
+		echo "true"
+	else
+		#nothing mounted
+		echo "false"
+	fi
+}

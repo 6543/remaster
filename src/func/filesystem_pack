@@ -1,0 +1,33 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#filesystem_pack [chroot_path] [filesystem_img_destination]
+function filesystem_pack() {
+	echo "pack filesystem ..."
+
+	#$1 = chroot_path
+	#$2 = filesystem_img_destination
+	chroot_path="$1"
+	filesystem_img_destination="$2"
+	filesystem_log="`mktemp`"
+
+	#Überfrüfen der Parameter
+	[ -d "$chroot_path" ] || {
+		echo "### ERROR ### filesystem_extract: chroot_path \"$chroot_path\" not exist!"
+		return 12
+	}
+
+	#loslegen ...
+	rm -f "$filesystem_img_destination"
+	mksquashfs "$chroot_path" "$filesystem_img_destination" > "$filesystem_log" || {
+		echo "### ERROR ### filesystem_pack: mksquashfs failed!"
+		return 13
+	}
+
+	grep -v "\[" "$filesystem_log"
+	rm "$filesystem_log"
+
+	echo "done"
+}

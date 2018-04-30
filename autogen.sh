@@ -23,8 +23,9 @@ chmod +x $rootdir/usr/bin/remaster
 
 # modules
 mkdir -p $rootdir/usr/lib/remaster/
-for i in dist functions mods; do
-  cp -v src/$i/* $rootdir/usr/lib/remaster/
+for i in proj func mods; do
+  mkdir -p $rootdir/usr/lib/remaster/$i
+  cp -v src/$i/* $rootdir/usr/lib/remaster/$i/
 done
 
 # setting

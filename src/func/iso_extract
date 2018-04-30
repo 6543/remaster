@@ -1,0 +1,48 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#iso_extract [iso_source] [iso_extr_dir]
+function iso_extract() {
+	echo -n "extract iso ... "
+
+	#$1 = iso_source
+	#$2 = iso_extr_dir
+
+	#check root
+	[ "`whoami`" == "root" ] || {
+		echo "### ERROR ### iso_extract: need root permision!"
+		return 10
+	}
+
+	iso_source="$1"
+	[ -f "$iso_source" ] || {
+		echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
+		return 11
+	}
+
+	iso_extr_dir="$2"
+	[ -d "$iso_extr_dir" ] || {
+		echo "### ERROR ### iso_extract: aim directory not exist!"
+		return 12
+	}
+
+	#mace tmp mountpoint
+	tmpdir="`mktemp -d`"
+	[ -d "$iso_extr_dir" ] && {
+		rm -r "$iso_extr_dir/"
+		mkdir "$iso_extr_dir"
+	}
+
+	#copy files ...
+	mount -o loop,ro "$iso_source" "$tmpdir"
+	cp -f -r "$tmpdir/"* "$iso_extr_dir"
+
+	#clear tmp mountpoint
+	umount "$iso_source"
+	rm -r "$tmpdir"
+	tmpdir=
+
+	echo "done"
+}

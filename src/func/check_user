@@ -1,0 +1,13 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#check_user
+function check_user() {
+	#check root
+	[ "`whoami`" == "root" ] || {
+		echo "### ERROR ### Remaster need ROOT permision!"
+		return 10
+	}
+}

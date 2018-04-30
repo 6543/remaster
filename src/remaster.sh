@@ -14,7 +14,6 @@ export "rootdir=`readlink -e $rootdir`"
 #set functions
 if [ -p "$rootdir/usr/lib/remaster/" ]; then
 	#source "$rootdir/usr/lib/remaster/" ...
-	export PATH="$rootdir/usr/lib/remaster/":$PATH
 	export LIBDIR="$rootdir/usr/lib/remaster/"
 else
 	echo "ERROR functions not found"
@@ -477,11 +476,6 @@ function main_update() {
 	main_update_pxe
 }
 
-#remaster.sh error_code [error_level]
-function main_error_code() {
-	error_code $1
-}
-
 #####################################################################################
 ################## F u n c t i o n s ################################################
 #####################################################################################
@@ -489,268 +483,44 @@ function main_error_code() {
 ### Error Handlings ###
 
 #on_exit [error_level]
-function on_exit() {
-	#send log and errorlevel[success/errorr xy]
-
-	if [ "$1" != "0" ]; then
-		log_mail_subject="$log_mail_subject [ERROR]"
-	else
-		log_mail_subject="$log_mail_subject [Success]"
-	fi
-
-	#Mail Body:
-	for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
-		{
-			echo "$log_mail_subject"
-			echo $'####################################################################################\n\n'
-			cat "$log_file"
-		} | sendemail -s "$log_mail_smtp" -f "$log_mail_source" -t "$mail_aim" -u "$log_mail_subject" -o tls=no
-	done
-
-	[ "$1" != "0" ] && {
-		chroot_umount$distro "$chroot_path" 2> /dev/null
-		workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
-	}
-	exit $1
-}
+source $LIBDR/func/on_exit
 
 #error_code [error_level]
-function error_code() {
-	code="$1"
- 	case $code in
-  	"")
-			echo $'ID:\tDescription\n----------------------------------------------------\n1\tAllgemeiner Fehler\n2\tNo Paramters / wrong parameters'
-			echo $'3\tWrong Settings\n4\tProgramm missing\n\n10\tno root\n11\tfile no found\n12\tdir not found\n13\tcant create/delete file/dir'
-			echo $'14\tcorrupt file (unsquashfs, mount iso, ...)\n15\twrong file (iso has no squashfs-file ...)\n16\trequired Packet not found\n\n20\tmount error\n21\tunmoun error\n22\twrong filesystem'
-			;;
-		1)
-			echo "Allgemeiner Fehler"
-			;;
-		2)
-			echo "No Paramters / wrong parameters"
-  		;;
-  	3)
-  		echo "Wrong Settings"
-  		;;
-  	4)
-  		echo "Programm missing"
-  		;;
-  	10)
-  		echo "not executed as Root"
-  		;;
-  	11)
-  		echo "file no found"
-  		;;
-  	12)
-  		echo "dir not found"
-  		;;
-  	13)
-  		echo "cant create/delete file/dir"
-  		;;
-  	14)
-  		echo "corrupt file (unsquashfs, mount iso, ...)"
-  		;;
-  	15)
-  		echo "wrong file (iso has no squashfs-file ...)"
-  		;;
-		16)
-			echo "required Packet not found"
-			;;
-  	20)
-  		echo "tmount error"
-  		;;
-  	21)
-  		echo "unmoun error"
-  		;;
-  	22)
-  		echo "wrong filesystem"
-  		;;
-  	*)
-  		echo $'No Defined Error Code.\nPerhaps an Error ocure on a Command wich was started by this Skritp.'
-  		;;
-	esac
-}
+source $LIBDR/func/error_code
 
 #check_user
-function check_user() {
-	#check root
-	[ "`whoami`" == "root" ] || {
-		echo "### ERROR ### Remaster need ROOT permision!"
-		return 10
-	}
-}
+source $LIBDR/func/check_user
 
 #check_dependency
-function check_dependency() {
-	for packet in squashfs-tools xorriso wget sed sendemail; do
-		[ "`dpkg -l $packet 2>&1`" == "dpkg-query: Kein Paket gefunden, das auf $packet passt" ] && {
-			echo "### ERROR ### Packet $packet not installed"
-			return 16
-		}
-	done
-	return 0
-}
+# -> 0 | -> 16
+source $LIBDR/func/check_dependency
 
 
 ### Workspace ###
 
 #workspace_erase [workspace_path]
-function workspace_erase() {
-	echo -n "erase workspace ... "
+source $LIBDR/func/workspace_erase
 
-	for dir in "$@"; do
-		[ -d "$dir" ] && rm -r -f "$dir"
-	done
-
-	echo "done"
-}
 
 ### Filesystem ###
 
 #filesystem_extract [filesystem_img_source] [chroot_path]
-function filesystem_extract() {
-	echo "extract filesystem ..."
-
-	#$1 = filesystem_img_source
-	#$2 = chroot_path
-	filesystem_img_source="$1"
-	chroot_path="$2"
-	filesystem_log="`mktemp`"
-
-	#Überfrüfen der Parameter
-	[ -f "$filesystem_img_source" ] || {
-		echo "### ERROR ### filesystem_extract: squashfs \"$filesystem_img_source\" not exist!"
-		return 11
-	}
-
-	[ "`mkdir -p "$chroot_path"`" != "" ] && {
-		echo "### ERROR ### filesystem_extract: chroot_path \"$chroot_path\" can't create!"
-		return 13
-	}
-
-	[ "`filesystem_get_type $chroot_path`" != "ext4" ] && [ "`filesystem_get_type $chroot_path`" != "btrfs" ] && {
-		echo "### ERROR ### filesystem_extract: wrong filesystem (`filesystem_get_type $chroot_path`)!"
-		return 22
-	}
-
-	rm -r "$chroot_path"
-
-	#eigendliches entpacken
-	unsquashfs -d "$chroot_path" "$filesystem_img_source" > "$filesystem_log" || {
-		echo "### ERROR ### filesystem_extract: unsquashfs failed!"
-		return 14
-	}
-
-	grep -v "\[" "$filesystem_log"
-	rm "$filesystem_log"
-
-	echo "done"
-}
+source $LIBDR/func/filesystem_extract
 
 #filesystem_pack [chroot_path] [filesystem_img_destination]
-function filesystem_pack() {
-	echo "pack filesystem ..."
-
-	#$1 = chroot_path
-	#$2 = filesystem_img_destination
-	chroot_path="$1"
-	filesystem_img_destination="$2"
-	filesystem_log="`mktemp`"
-
-	#Überfrüfen der Parameter
-	[ -d "$chroot_path" ] || {
-		echo "### ERROR ### filesystem_extract: chroot_path \"$chroot_path\" not exist!"
-		return 12
-	}
-
-	#loslegen ...
-	rm -f "$filesystem_img_destination"
-	mksquashfs "$chroot_path" "$filesystem_img_destination" > "$filesystem_log" || {
-		echo "### ERROR ### filesystem_pack: mksquashfs failed!"
-		return 13
-	}
-
-	grep -v "\[" "$filesystem_log"
-	rm "$filesystem_log"
-
-	echo "done"
-}
+source $LIBDR/func/filesystem_pack
 
 #filesystem_get_type [dir]
 #(String)-> ext4, ext2, btfs, fuse, ...
-function filesystem_get_type() {
-	fs_aTemp=(`df -T "$1"`)
-	echo ${fs_aTemp[9]}
-}
+source $LIBDR/func/filesystem_get_type
 
 ### ISO ###
 
 #iso_extract [iso_source] [iso_extr_dir]
-function iso_extract() {
-	echo -n "extract iso ... "
-
-	#$1 = iso_source
-	#$2 = iso_extr_dir
-
-	#check root
-	[ "`whoami`" == "root" ] || {
-		echo "### ERROR ### iso_extract: need root permision!"
-		return 10
-	}
-
-	iso_source="$1"
-	[ -f "$iso_source" ] || {
-		echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
-		return 11
-	}
-
-	iso_extr_dir="$2"
-	[ -d "$iso_extr_dir" ] || {
-		echo "### ERROR ### iso_extract: aim directory not exist!"
-		return 12
-	}
-
-	#mace tmp mountpoint
-	tmpdir="`mktemp -d`"
-	[ -d "$iso_extr_dir" ] && {
-		rm -r "$iso_extr_dir/"
-		mkdir "$iso_extr_dir"
-	}
-
-	#copy files ...
-	mount -o loop,ro "$iso_source" "$tmpdir"
-	cp -f -r "$tmpdir/"* "$iso_extr_dir"
-
-	#clear tmp mountpoint
-	umount "$iso_source"
-	rm -r "$tmpdir"
-	tmpdir=
-
-	echo "done"
-}
+source $LIBDR/func/iso_extract
 
 #iso_create [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
-function iso_create() {
-	echo -n "create iso ..."
-
-	chroot_path="$1"
-	iso_extr_dir="$2"
-	iso_destination="$3"
-	iso_lable="$4"
-
-	[ -e "$iso_destination" ] && rm "$iso_destination"
-
-	xorriso -as mkisofs -graft-points -c isolinux/boot.cat -b isolinux/isolinux.bin \
-	-no-emul-boot -boot-info-table -boot-load-size 4 -isohybrid-mbr \
-	"$iso_extr_dir/isolinux/isolinux.bin" \
-	-eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
-	-isohybrid-gpt-basdat -V "$iso_lable" \
-	-o "$iso_destination" \
-	-r -J "$iso_extr_dir" \
-	--sort-weight 0 / --sort-weight 2 /boot --sort-weight 1 /isolinux
-
-	echo "done"
-}
+source $LIBDR/func/iso_create
 
 #iso_create_desinfect2015 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
 function iso_create_desinfect2015() {
@@ -803,27 +573,7 @@ function iso_create_desinfect2017() {
 ### chroot ###
 
 #chroot_initial [chroot_dir]
-function chroot_initial() {
-	echo -n "initial chroot ... "
-
-	#check chroot dir
-	chroot_dir="$1"
-	[ -d "$chroot_dir" ] || {
-		echo "### ERROR ### chroot_initial: chroot directory not exist"
-		return 12
-	}
-
-	#mount virus definitions
-	mount -t tmpfs tmpfs "$chroot_dir/tmp"
-	mount -t tmpfs tmpfs "$chroot_dir/root"
-	mount --bind /dev "$chroot_dir/dev"
-	mount --bind /proc "$chroot_dir/proc"
-
-	rm "$chroot_dir/etc/resolv.conf"
-	cp "/etc/resolv.conf" "$chroot_dir/etc/resolv.conf"
-
-	echo "done"
-}
+source $LIBDR/func/chroot_initial
 
 #chroot_initial_desinfect2015 [chroot_dir]
 function chroot_initial_desinfect2015() {
@@ -879,41 +629,10 @@ function chroot_initial_desinfect2017() {
 
 
 #chroot_clean [chroot_dir]
-function chroot_clean() {
-	echo "clean chroot ... "
-
-	chroot_dir="$1"
-
-	chroot "$chroot_dir" /bin/bash -c "apt-get clean"
-	chroot "$chroot_dir" /bin/bash -c "rm -r /var/cache/apt/*"
-	chroot "$chroot_dir" /bin/bash -c "apt-get update"
-	chroot "$chroot_dir" /bin/bash -c "apt-get check"
-
-	echo "done"
-}
+source $LIBDR/func/chroot_clean
 
 #chroot_umount [chroot_dir]
-function chroot_umount() {
-	echo -n "unmount chroot ... "
-
-	#check chroot dir
-	chroot_dir="$1"
-	[ -d "$chroot_dir" ] || {
-		echo "### ERROR ### chroot_umount: chroot directory not exist!"
-		return 12
-	}
-
-	for d in "$chroot_dir/tmp" "$chroot_dir/root" "$chroot_dir/proc" "$chroot_dir/dev" ; do
-   		umount $d
-   		retval=$?
-   		[ "$retval" -gt 0 ] && {
-      		echo "### ERROR ### chroot_umount: can't umount \"$d\"!"
-      		return 21
-   		}
-	done
-
-	echo "done"
-}
+source $LIBDR/func/chroot_umount
 
 #chroot_umount_desinfect2015 [chroot_dir]
 function chroot_umount_desinfect2015() {
@@ -970,38 +689,10 @@ function chroot_umount_desinfect2017() {
 
 #chroot_is_mounted [chroot_dir]
 #(Boolean)-> true | false
-function chroot_is_mounted() {
-	#$1 = chroot directory
-
-	if [ "`mount | grep "$1"`" != "" ] ; then
-		#ther is smething mounted
-		echo "true"
-	else
-		#nothing mounted
-		echo "false"
-	fi
-}
+source $LIBDR/func/chroot_is_mounted
 
 #chroot_sh [chroot_dir] [command]
-function chroot_sh() {
-	#check chroot dir
-	chroot_dir="$1"
-	[ -d "$chroot_dir" ] || {
-		echo "### ERROR ### chroot_sh: chroot directory not exist!"
-		return 12
-	}
-
-	command="$2"
-
-	[ -f "$chroot_dir/tmp/env.sh" ] || {
-		#if not exist create environment skript
-		cat "$chroot_dir/etc/environment" | grep -v "#" | grep "=" > "$chroot_dir/tmp/env"
-		while read line; do echo export $line; done < "$chroot_dir/tmp/env" > "$chroot_dir/tmp/env.sh"
-		chmod +x "$chroot_dir/tmp/env.sh" && rm "$chroot_dir/tmp/env"
-	}
-
-	chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; $command"
-}
+source $LIBDR/func/chroot_sh
 
 ### Settings ###
 ### proxy

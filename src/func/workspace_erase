@@ -1,0 +1,15 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+
+#workspace_erase [workspace_path]
+function workspace_erase() {
+	echo -n "erase workspace ... "
+
+	for dir in "$@"; do
+		[ -d "$dir" ] && rm -r -f "$dir"
+	done
+
+	echo "done"
+}
