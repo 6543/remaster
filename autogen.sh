@@ -8,41 +8,32 @@
 [ -n "$1" ] && mode=debug
 # install | clean | debug
 
-case
-ROOTDIR=build
+function clean() {
 echo "clear build"
-[ -d $ROOTDIR ] && rm -v -R $ROOTDIR
-mkdir $ROOTDIR
+[ -d build ] && rm -v -R build
+mkdir build
+}
 
-######################
+function build() {
+echo "build ..."
 ## skripte copieren ##
-######################
-
-echo "copy files"
-
 # remaster
-mkdir -p $ROOTDIR/usr/bin/
-cp -v src/remaster.sh $ROOTDIR/usr/bin/remaster
-chmod +x $ROOTDIR/usr/bin/remaster
+mkdir -p build/usr/bin/
+cp -v src/remaster.sh build/usr/bin/remaster
+chmod +x build/usr/bin/remaster
 
 # modules
-mkdir -p $ROOTDIR/usr/lib/remaster/
+mkdir -p build/usr/lib/remaster/
 for i in proj func mods; do
-  mkdir -p $ROOTDIR/usr/lib/remaster/$i
-  cp -v src/$i/* $ROOTDIR/usr/lib/remaster/$i/
+  mkdir -p build/usr/lib/remaster/$i
+  cp -v src/$i/* build/usr/lib/remaster/$i/
 done
 
 # setting
-mkdir -p $ROOTDIR/etc/remaster/
-cp -v src/config.sample.cfg $ROOTDIR/etc/remaster/config.sample.cfg
+mkdir -p build/etc/remaster/
+cp -v src/config.sample.cfg build/etc/remaster/config.sample.cfg
 
-
-# Pfade anpassen
-#sed ...
-
-
-#mkdeb...
-#not jet
+}
 
 
 case "$1" in
