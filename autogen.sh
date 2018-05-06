@@ -35,6 +35,33 @@ function build() {
 
 }
 
+function set_rootdir() {
+  sed -i "s/<ROOTDIR>/$1/g" build/usr/bin/remaster
+  for i in proj func mods; do
+    sed -i "s/<ROOTDIR>/$1/g" build/usr/lib/remaster/$i/*
+  done
+}
+function set_libdir() {
+  sed -i "s/<LIBDIR>/$1/g" build/usr/bin/remaster
+  for i in proj func mods; do
+    sed -i "s/<LIBDIR>/$1/g" build/usr/lib/remaster/$i/*
+  done
+}
+
+function debug() {
+  clean
+  build
+  set_rootdir "`pwd`/build"
+  set_libdir "`pwd`/build/usr/lib/remaster"
+}
+
+function install() {
+  clean
+  build
+  set_rootdir ""
+  set_libdir "/usr/lib/remaster"
+  #cp -f -r build/* /
+}
 
 case "$1" in
   install)

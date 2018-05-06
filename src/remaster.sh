@@ -10,7 +10,7 @@
 
 #set functions
 [ -d "<LIBDIR>" ] || {
-  echo "ERROR functions not found"
+  echo "ERROR Librarys not found"
   exit 1
 }
 
