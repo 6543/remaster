@@ -1,10 +1,9 @@
 #!/bin/bash
 #remaster lib
-[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
-[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
+[ -d "<LIBDIR>"] || { echo "LIBDIR not exist"; exit 1; }
 
 #ubuntu.16.04
 # . -> ubuntu -> debian
-source $LIBDIR/proj/ubuntu
+source <LIBDIR>/proj/ubuntu
 
 TEST2="jaUBU"

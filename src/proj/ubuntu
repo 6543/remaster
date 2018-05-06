@@ -1,12 +1,11 @@
 #!/bin/bash
 #remaster lib
-[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
-[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
+[ -d "<LIBDIR>"] || { echo "LIBDIR not exist"; exit 1; }
 
 ####################################
 ##### Base Template U B U N T U ####
 ####################################
 # . -> debian
-source $LIBDIR/proj/debian
+source <LIBDIR>/proj/debian
 
 TEST2="jaUb"

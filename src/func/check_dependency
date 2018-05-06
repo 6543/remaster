@@ -1,7 +1,6 @@
 #!/bin/bash
 #remaster lib
-[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
-[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
+[ -d "<LIBDIR>"] || { echo "LIBDIR not exist"; exit 1; }
 
 #check_dependency
 # -> 0 | -> 16
