@@ -1,19 +1,12 @@
 #!/bin/bash
 # at the moment only generate dir structure in /build
 
-####################
-## set enviroment ##
-####################
-
-[ -n "$1" ] && mode=debug
-# install | clean | debug
-
+#make ...
 function clean() {
   echo "clear build"
   [ -d build ] && rm -v -R build
   mkdir build
 }
-
 function build() {
   echo "build ..."
   ## skripte copieren ##
@@ -35,6 +28,7 @@ function build() {
 
 }
 
+#config ...
 function set_rootdir() {
   sed -i "s/<ROOTDIR>/$1/g" build/usr/bin/remaster
   for i in proj func mods; do
@@ -48,13 +42,13 @@ function set_libdir() {
   done
 }
 
+#modes
 function debug() {
   clean
   build
   set_rootdir "`pwd`/build"
   set_libdir "`pwd`/build/usr/lib/remaster"
 }
-
 function install() {
   clean
   build
@@ -62,6 +56,7 @@ function install() {
   set_libdir "/usr/lib/remaster"
   #cp -f -r build/* /
 }
+
 
 case "$1" in
   install)
@@ -73,7 +68,10 @@ case "$1" in
   debug)
     debug || exit 1
     ;;
+  build)
+    build || exit 1
+    ;;
   *)
-    echo "Usage: install | clean | debug"
+    echo "Usage: install | clean | debug | build"
     exit 1
 esac
