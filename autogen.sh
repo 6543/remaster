@@ -30,15 +30,15 @@ function build() {
 
 #config ...
 function set_rootdir() {
-  sed -i "s/<ROOTDIR>/$1/g" build/usr/bin/remaster
+  sed -i "s#<ROOTDIR>#$1#g" build/usr/bin/remaster
   for i in proj func mods; do
-    sed -i "s/<ROOTDIR>/$1/g" build/usr/lib/remaster/$i/*
+    sed -i "s#<ROOTDIR>#$1#g" build/usr/lib/remaster/$i/*
   done
 }
 function set_libdir() {
-  sed -i "s/<LIBDIR>/$1/g" build/usr/bin/remaster
+  sed -i "s#<LIBDIR>#$1#g" build/usr/bin/remaster
   for i in proj func mods; do
-    sed -i "s/<LIBDIR>/$1/g" build/usr/lib/remaster/$i/*
+    sed -i "s#<LIBDIR>#$1#g" build/usr/lib/remaster/$i/*
   done
 }
 
