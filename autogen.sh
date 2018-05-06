@@ -1,14 +1,18 @@
 #!/bin/bash
 # at the moment only generate dir structure in /build
 
-#####################
-## setup build dir ##
-#####################
+####################
+## set enviroment ##
+####################
 
-rootdir=build
+[ -n "$1" ] && mode=debug
+# install | clean | debug
+
+case
+ROOTDIR=build
 echo "clear build"
-[ -d $rootdir ] && rm -v -R $rootdir
-mkdir $rootdir
+[ -d $ROOTDIR ] && rm -v -R $ROOTDIR
+mkdir $ROOTDIR
 
 ######################
 ## skripte copieren ##
@@ -17,20 +21,20 @@ mkdir $rootdir
 echo "copy files"
 
 # remaster
-mkdir -p $rootdir/usr/bin/
-cp -v src/remaster.sh $rootdir/usr/bin/remaster
-chmod +x $rootdir/usr/bin/remaster
+mkdir -p $ROOTDIR/usr/bin/
+cp -v src/remaster.sh $ROOTDIR/usr/bin/remaster
+chmod +x $ROOTDIR/usr/bin/remaster
 
 # modules
-mkdir -p $rootdir/usr/lib/remaster/
+mkdir -p $ROOTDIR/usr/lib/remaster/
 for i in proj func mods; do
-  mkdir -p $rootdir/usr/lib/remaster/$i
-  cp -v src/$i/* $rootdir/usr/lib/remaster/$i/
+  mkdir -p $ROOTDIR/usr/lib/remaster/$i
+  cp -v src/$i/* $ROOTDIR/usr/lib/remaster/$i/
 done
 
 # setting
-mkdir -p $rootdir/etc/remaster/
-cp -v src/config.sample.cfg $rootdir/etc/remaster/config.sample.cfg
+mkdir -p $ROOTDIR/etc/remaster/
+cp -v src/config.sample.cfg $ROOTDIR/etc/remaster/config.sample.cfg
 
 
 # Pfade anpassen
@@ -39,3 +43,19 @@ cp -v src/config.sample.cfg $rootdir/etc/remaster/config.sample.cfg
 
 #mkdeb...
 #not jet
+
+
+case "$1" in
+  install)
+     install || exit 1
+     ;;
+  clean)
+     clean || exit 1
+     ;;
+  debug)
+     debug || exit 1
+     ;;
+  *)
+     echo "Usage: install | clean | debug"
+     exit 1
+esac

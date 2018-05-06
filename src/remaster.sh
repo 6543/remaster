@@ -7,25 +7,19 @@
 #####################################################################################
 ################## S e t t i n g s ##################################################
 #####################################################################################
-#get base dir
-rootdir=`echo $0 | rev | cut -d "/" -f 2- | rev`/../../
-export "rootdir=`readlink -e $rootdir`"
 
 #set functions
-if [ -p "$rootdir/usr/lib/remaster/" ]; then
-	#source "$rootdir/usr/lib/remaster/" ...
-	export LIBDIR="$rootdir/usr/lib/remaster/"
-else
+[ -d "<LIBDIR>" ] || {
 	echo "ERROR functions not found"
 	exit 1
-fi
+}
 
 #read main setting
-if [ -f "$rootdir/etc/remaster/config.cfg"]; then
-	source "$rootdir/etc/remaster/config.cfg"
+if [ -f "<ROOTDIR>/etc/remaster/config.cfg"]; then
+	source "<ROOTDIR>/etc/remaster/config.cfg"
 else
-	if [ -f "$rootdir/etc/remaster/config.sample.cfg"]; then
-		source "$rootdir/etc/remaster/config.sample.cfg"
+	if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg"]; then
+		source "<ROOTDIR>/etc/remaster/config.sample.cfg"
 	else
 		echo "ERROR config not found"
 		exit 1
@@ -483,44 +477,44 @@ function main_update() {
 ### Error Handlings ###
 
 #on_exit [error_level]
-source $LIBDR/func/on_exit
+source <LIBDIR>/func/on_exit
 
 #error_code [error_level]
-source $LIBDR/func/error_code
+source <LIBDIR>/func/error_code
 
 #check_user
-source $LIBDR/func/check_user
+source <LIBDIR>/func/check_user
 
 #check_dependency
 # -> 0 | -> 16
-source $LIBDR/func/check_dependency
+source <LIBDIR>/func/check_dependency
 
 
 ### Workspace ###
 
 #workspace_erase [workspace_path]
-source $LIBDR/func/workspace_erase
+source <LIBDIR>/func/workspace_erase
 
 
 ### Filesystem ###
 
 #filesystem_extract [filesystem_img_source] [chroot_path]
-source $LIBDR/func/filesystem_extract
+source <LIBDIR>/func/filesystem_extract
 
 #filesystem_pack [chroot_path] [filesystem_img_destination]
-source $LIBDR/func/filesystem_pack
+source <LIBDIR>/func/filesystem_pack
 
 #filesystem_get_type [dir]
 #(String)-> ext4, ext2, btfs, fuse, ...
-source $LIBDR/func/filesystem_get_type
+source <LIBDIR>/func/filesystem_get_type
 
 ### ISO ###
 
 #iso_extract [iso_source] [iso_extr_dir]
-source $LIBDR/func/iso_extract
+source <LIBDIR>/func/iso_extract
 
 #iso_create [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
-source $LIBDR/func/iso_create
+source <LIBDIR>/func/iso_create
 
 #iso_create_desinfect2015 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
 function iso_create_desinfect2015() {
@@ -573,7 +567,7 @@ function iso_create_desinfect2017() {
 ### chroot ###
 
 #chroot_initial [chroot_dir]
-source $LIBDR/func/chroot_initial
+source <LIBDIR>/func/chroot_initial
 
 #chroot_initial_desinfect2015 [chroot_dir]
 function chroot_initial_desinfect2015() {
@@ -629,10 +623,10 @@ function chroot_initial_desinfect2017() {
 
 
 #chroot_clean [chroot_dir]
-source $LIBDR/func/chroot_clean
+source <LIBDIR>/func/chroot_clean
 
 #chroot_umount [chroot_dir]
-source $LIBDR/func/chroot_umount
+source <LIBDIR>/func/chroot_umount
 
 #chroot_umount_desinfect2015 [chroot_dir]
 function chroot_umount_desinfect2015() {
@@ -689,10 +683,10 @@ function chroot_umount_desinfect2017() {
 
 #chroot_is_mounted [chroot_dir]
 #(Boolean)-> true | false
-source $LIBDR/func/chroot_is_mounted
+source <LIBDIR>/func/chroot_is_mounted
 
 #chroot_sh [chroot_dir] [command]
-source $LIBDR/func/chroot_sh
+source <LIBDIR>/func/chroot_sh
 
 ### Settings ###
 ### proxy
@@ -1100,19 +1094,7 @@ function sourcelist_desinfect_set_extendet2017() {
 ### Update ###
 
 #os_update [chroot_dir]
-function os_update() {
-	echo "updating os ... "
-	#$1 = chroot directory
-
-	chroot_dir="$1"
-
-	chroot "$chroot_dir" /bin/bash -c "apt-get update" > /dev/null
-	[ "$?" == "0" ] && echo "apt-get update: success"
-	chroot "$chroot_dir" /bin/bash -c "apt-get dist-upgrade -y" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
-	chroot "$chroot_dir" /bin/bash -c "apt-get clean"
-
-	echo "done"
-}
+#-> proj/debian
 
 #os_update_desinfect2015 [chroot_dir]
 function os_update_desinfect2015() {
@@ -1332,17 +1314,7 @@ function os_update_desinfect2017() {
 ### Tools ###
 
 #tools_add [chroot_dir] [tools_list]
-function tools_add() {
-	echo "add tools ... "
-	#$1 = chroot directory
-	chroot_dir="$1"
-	tools_list="$2"
-
-	chroot "$chroot_dir" /bin/bash -c "apt-get update" > /dev/null
-	[ "$?" == "0" ] && echo "apt-get update: success"
-	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
-	echo "done"
-}
+#-> proj/debian
 
 #tools_add_desinfect2015 [chroot_dir] [tools_list]
 function tools_add_desinfect2015() {
@@ -1377,6 +1349,7 @@ function tools_add_desinfect2017() {
 	sourcelist_desinfect_set_nomal2017 "$chroot_dir"
 }
 
+source <LIBDIR>/proj/desinfect.17
 
 ### Handle Parameters & Modes ###
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 #remaster lib
-[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
-[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
 
 #iso_extract [iso_source] [iso_extr_dir]
 function iso_extract() {

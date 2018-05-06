@@ -1,0 +1,40 @@
+#!/bin/bash
+#remaster lib
+[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
+####################################
+##### Base Template D E B I A N ####
+####################################
+# .
+
+
+#tools_add [chroot_dir] [tools_list]
+function tools_add() {
+	echo "add tools ... "
+	#$1 = chroot directory
+	chroot_dir="$1"
+	tools_list="$2"
+
+	chroot "$chroot_dir" /bin/bash -c "apt-get update" > /dev/null
+	[ "$?" == "0" ] && echo "apt-get update: success"
+	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
+	echo "done"
+}
+
+#os_update [chroot_dir]
+function os_update() {
+	echo "updating os ... "
+	#$1 = chroot directory
+
+	chroot_dir="$1"
+
+	chroot "$chroot_dir" /bin/bash -c "apt-get update" > /dev/null
+	[ "$?" == "0" ] && echo "apt-get update: success"
+	chroot "$chroot_dir" /bin/bash -c "apt-get dist-upgrade -y" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
+	chroot "$chroot_dir" /bin/bash -c "apt-get clean"
+
+	echo "done"
+}
+
+TEST="ja"
+TEST2="ja"

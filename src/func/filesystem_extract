@@ -1,7 +1,7 @@
 #!/bin/bash
 #remaster lib
-[ -d "$LIBDR"] || export LIBDIR="/usr/lib/remaster/"
-[ -d "$LIBDR"] || { echo "LIBDR not exist"; exit 1; }
+[ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
+[ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
 
 #filesystem_extract [filesystem_img_source] [chroot_path]
 function filesystem_extract() {

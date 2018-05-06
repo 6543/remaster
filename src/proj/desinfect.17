@@ -3,8 +3,8 @@
 [ -d "$LIBDIR"] || export LIBDIR="/usr/lib/remaster/"
 [ -d "$LIBDIR"] || { echo "LIBDIR not exist"; exit 1; }
 
-#ubuntu.16.04
-# . -> ubuntu -> debian
-source $LIBDIR/proj/ubuntu
+#desinfect.17
+# . -Y ubuntu.16.04 -> ubuntu -> debian
+source $LIBDIR/proj/ubuntu.16.04
 
-TEST2="jaUBU"
+TEST2="na"
