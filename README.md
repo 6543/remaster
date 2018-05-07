@@ -15,12 +15,14 @@ The aim of this Project is to create a deamon for a server, wich update live sys
 
 ## ToDo
 
-- more OS
+- Support more Projects
 
   - Debian
   - Ubuntu
   - Desinfect17
   - CentOS
+
+- Add Job-Scheduler
 
 ## At the Moment
 
