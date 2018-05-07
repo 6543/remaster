@@ -1,6 +1,6 @@
 #!/bin/bash
 #remaster lib
-[ -d "<LIBDIR>"] || { echo "LIBDIR not exist"; exit 1; }
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
 #desinfect.17
 # . -Y ubuntu.16.04 -> ubuntu -> debian

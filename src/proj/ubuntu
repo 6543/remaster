@@ -1,6 +1,6 @@
 #!/bin/bash
 #remaster lib
-[ -d "<LIBDIR>"] || { echo "LIBDIR not exist"; exit 1; }
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
 ####################################
 ##### Base Template U B U N T U ####
