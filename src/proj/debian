@@ -35,6 +35,3 @@ function os_update() {
 
 	echo "done"
 }
-
-TEST="ja"
-TEST2="ja"

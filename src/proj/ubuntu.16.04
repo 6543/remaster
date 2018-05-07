@@ -5,5 +5,3 @@
 #ubuntu.16.04
 # . -> ubuntu -> debian
 source <LIBDIR>/proj/ubuntu
-
-TEST2="jaUBU"

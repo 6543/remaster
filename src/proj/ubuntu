@@ -7,5 +7,3 @@
 ####################################
 # . -> debian
 source <LIBDIR>/proj/debian
-
-TEST2="jaUb"
