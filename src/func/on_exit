@@ -28,7 +28,7 @@ function on_exit() {
 	exit $1
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  on_exit $@
 }

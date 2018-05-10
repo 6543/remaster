@@ -46,7 +46,7 @@ function iso_extract() {
 	echo "done"
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  iso_extract $@
 }

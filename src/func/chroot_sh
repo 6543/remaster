@@ -23,7 +23,7 @@ function chroot_sh() {
 	chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; $command"
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  chroot_sh $@
 }
