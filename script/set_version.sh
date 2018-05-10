@@ -1,12 +1,22 @@
 #!/bin/bash
 
-[ -f "src/remaster.sh" ] && {
+version=$1
+date=`date +%Y-%m-%d`
 
-  v=`echo $1 | sed 's/\./\\./g'`
+[ -e "src/remaster.sh" ] && {
+
+  version_sed=`echo $version | sed 's/\./\\./g'`
 
   #nummer
-  sed -i "s/@version\ .\..\../@version\ $v/g" src/remaster.sh
+  sed -i "s/@version\ .\..\../@version\ $version_sed/g" src/remaster.sh
 
   #datum
-  sed -i "s/@date\ ....-..-../@date\ `date +%Y-%m-%d`/g" src/remaster.sh
+  sed -i "s/@date\ ....-..-../@date\ $date/g" src/remaster.sh
+}
+
+[ -e "changes/remaster.md" ] && {
+
+  echo >> changes/remaster.md
+  echo $date - $version >> changes/remaster.md
+  echo pleace update changes/remaster.md
 }

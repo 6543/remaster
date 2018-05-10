@@ -1,5 +1,5 @@
 #!/bin/bash
-#@version 1.9.2
+#@version 1.9.3
 #@autor 6543@obermui.de
 #@date 2018-05-10
 #@licence GNUv3
@@ -15,10 +15,10 @@
 }
 
 #read main setting
-if [ -f "<ROOTDIR>/etc/remaster/config.cfg"]; then
+if [ -f "<ROOTDIR>/etc/remaster/config.cfg" ]; then
   source "<ROOTDIR>/etc/remaster/config.cfg"
 else
-  if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg"]; then
+  if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg" ]; then
     source "<ROOTDIR>/etc/remaster/config.sample.cfg"
   else
     echo "ERROR config not found"
@@ -868,7 +868,7 @@ function proxy_enable_desinfect2017() {
   #Sophos
   if [ -f ""$chroot_dir/opt/sophos-av/etc/savd.cfg"" ]; then
     echo "Sophos: Found"
-    echo "<Source>sophos:</Source><Proxy><Address>http://www-proxy.bybn.de:80</Proxy></Address>" >> "$chroot_dir/opt/sophos-av/etc/savd.cfg"
+    echo "<Source>sophos:</Source><Proxy><Address>http://$proxy_host:$proxy_port</Proxy></Address>" >> "$chroot_dir/opt/sophos-av/etc/savd.cfg"
   else
     eco "Sophos: NOT Found"
   fi
