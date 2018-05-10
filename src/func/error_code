@@ -53,13 +53,16 @@ function error_code() {
   	22)
   		echo "wrong filesystem"
   		;;
+		all)
+		  error_code
+			;;
   	*)
   		echo $'No Defined Error Code.\nPerhaps an Error ocure on a Command wich was started by this Skritp.'
   		;;
 	esac
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  error_code $@
 }

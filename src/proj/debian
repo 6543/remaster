@@ -35,8 +35,3 @@ function os_update() {
 
 	echo "done"
 }
-
-[ -n "$1" ] && {
-  echo param
-  $1
-}

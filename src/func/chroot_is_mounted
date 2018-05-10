@@ -16,7 +16,7 @@ function chroot_is_mounted() {
 	fi
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  chroot_is_mounted $@
 }
