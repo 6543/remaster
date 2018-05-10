@@ -5,7 +5,7 @@
 #check_dependency
 # -> 0 | -> 16
 function check_dependency() {
-	for packet in squashfs-tools xorriso wget sed sendemail; do
+	for packet in squashfs-tools xorriso lxc wget sed sendemail; do
 		[ "`dpkg -l $packet 2>&1`" == "dpkg-query: Kein Paket gefunden, das auf $packet passt" ] && {
 			echo "### ERROR ### Packet $packet not installed"
 			return 16

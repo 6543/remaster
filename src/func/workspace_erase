@@ -10,5 +10,8 @@ function workspace_erase() {
 		[ -d "$dir" ] && rm -r -f "$dir"
 	done
 
+	#lxc
+	[ -d /var/lib/lxc/_remaster_/ ] && rm -R /var/lib/lxc/_remaster_/
+
 	echo "done"
 }

@@ -619,6 +619,18 @@ function chroot_initial_desinfect2017() {
 
   chroot_initial "$1"
 
+	#LXC Start
+	config="/var/lib/lxc/_remaster_/config"
+
+	#special conf for distros:
+	echo "lxc.include = /usr/share/lxc/config/nesting.conf" > $config
+	echo "lxc.include = /usr/share/lxc/config/ubuntu.common.conf" >> $config
+	echo "lxc.arch = x86_64" >> $config
+
+	#normal config
+	chroot_config "$chroot_dir" >> $config
+	#LXC End
+
 }
 
 

@@ -1,0 +1,23 @@
+## overload chroot with lxc
+function chroot() {
+	lxc-attach -n _remaster_ -- "$2" "$3" "$4" "$5" "$6" "$7"
+}
+
+## create lxc config
+
+#chroot_config [chroot_dir]
+function chroot_config() {
+
+	chroot_dir="$1"
+
+	# Container specific configuration
+	echo "lxc.rootfs = $chroot_dir"
+	echo "lxc.rootfs.backend = dir"
+	echo "lxc.utsname = _remaster_"
+
+	# Network configuration
+	echo "lxc.network.type = veth"
+	echo "lxc.network.link = lxcbr0"
+	echo "lxc.network.flags = up"
+	echo "lxc.network.hwaddr = 00:16:3e:5a:ba:1e"
+}

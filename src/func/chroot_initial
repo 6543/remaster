@@ -13,11 +13,13 @@ function chroot_initial() {
 		return 12
 	}
 
-	#mount virus definitions
-	mount -t tmpfs tmpfs "$chroot_dir/tmp"
-	mount -t tmpfs tmpfs "$chroot_dir/root"
-	mount --bind /dev "$chroot_dir/dev"
-	mount --bind /proc "$chroot_dir/proc"
+	[ -d "/var/lib/lxc/_remaster_/" ] && {
+		echo "### Warning ### chroot_initial: lxc container exists"
+		[ -f "/var/lib/lxc/_remaster_/config" ] && {
+			mv -f "/var/lib/lxc/_remaster_/config" "/var/lib/lxc/_remaster_/config.old"
+		}
+	}
+	mkdir -p "/var/lib/lxc/_remaster_/"
 
 	rm "$chroot_dir/etc/resolv.conf"
 	cp "/etc/resolv.conf" "$chroot_dir/etc/resolv.conf"

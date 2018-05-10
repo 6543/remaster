@@ -7,11 +7,14 @@
 function chroot_is_mounted() {
 	#$1 = chroot directory
 
-	if [ "`mount | grep "$1"`" != "" ] ; then
-		#ther is smething mounted
-		echo "true"
-	else
-		#nothing mounted
+	#get state of _remaster from lxc
+	STATE=`lxc-ls _remaster_ -f -F STATE | tail -n 1 | sed 's/ //g'`
+
+	if [ "#$STATE#" == "#STOPPED#" ] ; then
+		#nothing running
 		echo "false"
+	else
+		#container is running
+		echo "true"
 	fi
 }
