@@ -16,7 +16,7 @@ function workspace_erase() {
 	echo "done"
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  workspace_erase $@
 }

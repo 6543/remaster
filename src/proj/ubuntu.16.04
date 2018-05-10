@@ -5,8 +5,3 @@
 #ubuntu.16.04
 # . -> ubuntu -> debian
 source <LIBDIR>/proj/ubuntu
-
-[ -n "$1" ] && {
-  echo param
-  $1
-}

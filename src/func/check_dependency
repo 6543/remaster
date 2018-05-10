@@ -14,7 +14,7 @@ function check_dependency() {
 	return 0
 }
 
+#this func is standalone executable
 [ -n "$1" ] && {
-  echo param
-  $1
+  check_dependency $@
 }
