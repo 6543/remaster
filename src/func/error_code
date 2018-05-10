@@ -58,3 +58,8 @@ function error_code() {
   		;;
 	esac
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

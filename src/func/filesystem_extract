@@ -41,3 +41,8 @@ function filesystem_extract() {
 
 	echo "done"
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

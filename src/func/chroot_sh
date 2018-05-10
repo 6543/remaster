@@ -22,3 +22,8 @@ function chroot_sh() {
 
 	chroot "$chroot_dir" /bin/bash --login -c ". /tmp/env.sh; $command"
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}
