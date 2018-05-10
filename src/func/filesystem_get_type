@@ -8,3 +8,8 @@ function filesystem_get_type() {
 	fs_aTemp=(`df -T "$1"`)
 	echo ${fs_aTemp[9]}
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}
