@@ -1,0 +1,16 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+
+
+## ...
+
+
+
+
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

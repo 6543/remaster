@@ -45,3 +45,8 @@ function iso_extract() {
 
 	echo "done"
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

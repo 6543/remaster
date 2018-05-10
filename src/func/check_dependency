@@ -13,3 +13,8 @@ function check_dependency() {
 	done
 	return 0
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

@@ -27,3 +27,8 @@ function on_exit() {
 	}
 	exit $1
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

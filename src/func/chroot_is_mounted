@@ -18,3 +18,8 @@ function chroot_is_mounted() {
 		echo "true"
 	fi
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

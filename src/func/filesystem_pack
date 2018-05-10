@@ -30,3 +30,8 @@ function filesystem_pack() {
 
 	echo "done"
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

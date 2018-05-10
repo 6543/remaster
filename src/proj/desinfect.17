@@ -7,3 +7,8 @@
 source <LIBDIR>/proj/ubuntu.16.04
 
 TEST2="na"
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

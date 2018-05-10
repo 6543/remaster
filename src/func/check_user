@@ -10,3 +10,8 @@ function check_user() {
 		return 10
 	}
 }
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}

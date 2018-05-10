@@ -7,3 +7,8 @@
 ####################################
 # . -> debian
 source <LIBDIR>/proj/debian
+
+[ -n "$1" ] && {
+  echo param
+  $1
+}
