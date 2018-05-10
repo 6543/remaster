@@ -3,9 +3,9 @@
 
 ## Description
 
-The aim of this Project is to create a deamon for a server, wich update live systems. You should only have to install the modules for different OS/Live-Projects. It also set the right network settings (Proxy, DNS, ...) and will be extendible wit PXE menue. additional: Web Interface (Create/Change/Deltete Jobs; Download Latest Isos; Start/Stop PXE Server)
+The aim of this Project is to create a daemon for a server, witch update live systems. You should only have to install the modules for different OS/Live-Projects. It also set the right network settings (Proxy, DNS, ...) and will be extendible wit PXE menu. additional: Web Interface (Create/Change/Delete Jobs; Download Latest ISO; Start/Stop PXE Server)
 
-## Dependencys
+## Dependency’s
 
 - squashfs-tools
 - xorriso
@@ -13,7 +13,7 @@ The aim of this Project is to create a deamon for a server, wich update live sys
 - sed
 - sendemail
 
-## ToDo
+## To Do
 
 - Support more Projects
 
