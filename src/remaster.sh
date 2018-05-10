@@ -566,6 +566,9 @@ function iso_create_desinfect2017() {
 
 ### chroot ###
 
+## overload chroot with lxc
+source <LIBDIR>/func/chroot
+
 #chroot_initial [chroot_dir]
 source <LIBDIR>/func/chroot_initial
 
