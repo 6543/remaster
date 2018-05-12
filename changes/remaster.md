@@ -15,3 +15,6 @@
 
 2018-05-13 - 2.0.1
  * Update-Prüfmechanismus #15
+
+2018-05-13 - 2.0.2
+ * hotfix-2.0.2 ( create release folder if not exist )

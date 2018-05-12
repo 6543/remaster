@@ -104,6 +104,7 @@ function build-deb() {
     version="`cat build/DEBIAN/control | grep Version | cut -d " " -f 2`"
     arch="`cat build/DEBIAN/control | grep Arch | cut -d " " -f 2`"
     [ -f "release/remaster_"$version"_"$arch".deb" ] && rm "release/remaster_"$version"_"$arch".deb"
+    mkdir -p release
     mv -v "build.deb" "release/remaster_"$version"_"$arch".deb"
 }
 
