@@ -1,0 +1,17 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#check_update
+function check_update() {
+    if curl https://raw.githubusercontent.com/6543/remaster/master/changes/remaster.md | diff - <(zcat <ROOTDIR>/usr/share/doc/remaster/changelog.gz ); then
+			echo 'REMASTER: Aktuell'
+	else
+			echo 'REMASTER: Warning: neue Version verfügbar'
+    fi
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+    check_update
+}

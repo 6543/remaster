@@ -3,3 +3,9 @@
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
 #beginn func
+
+
+#this func is standalone executable
+[ -n "$1" ] && {
+    check_user
+}
