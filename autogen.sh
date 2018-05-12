@@ -29,9 +29,6 @@ function copy() {
     cp -v changes/remaster.md build/usr/share/doc/remaster/changelog
     gzip --best build/usr/share/doc/remaster/changelog
 }
-function rights() {
-    echo ja
-}
 
 #config ...
 function set_rootdir() {
@@ -91,6 +88,7 @@ function build-deb() {
     cp -v -r -f DEBIAN build/
     #create md5sums
     find ./build -type f -exec md5sum {} \; | grep -v './build/DEBIAN' | sed 's/\.\/build\///g' > build/DEBIAN/md5sums
+    chmod 0644 build/DEBIAN/md5sums
 
     #set size
     SIZE="`du --exclude=build/DEBIAN -c build/ | cut -f 1 | tail -n 1`"
