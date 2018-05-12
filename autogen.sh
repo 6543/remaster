@@ -26,6 +26,10 @@ function build() {
   mkdir -p build/etc/remaster/
   cp -v src/config.sample.cfg build/etc/remaster/config.sample.cfg
 
+  #changelog
+  mkdir -p build/usr/share/doc/remaster
+  cp -v changes/remaster.md build/usr/share/doc/remaster/changelog
+  gzip build/usr/share/doc/remaster/changelog
 }
 
 #config ...
@@ -56,6 +60,31 @@ function install() {
   set_libdir "/usr/lib/remaster"
   #cp -f -r build/* /
 }
+function build_deb() {
+  clean
+  #prebuild
+  build
+  set_rootdir ""
+  set_libdir "/usr/lib/remaster"
+  ####
+  ## changes for deb file
+  ####
+  cp -v -r -f DEBIAN build/
+  #create md5sums
+  find ./build -type f -exec md5sum {} \; | grep -v './build/DEBIAN' | sed 's/\.\/build\///g' > build/DEBIAN/md5sums
+  #set size
+  SIZE="`du --exclude=build/DEBIAN -c build/ | cut -f 1 | tail -n 1`"
+  sed -i "s/<SIZE>/$SIZE/g" build/DEBIAN/control
+
+  ##
+  #build deb
+  ##
+  dpkg -b build/
+  version="`cat build/DEBIAN/control | grep Version | cut -d " " -f 2`"
+  arch="`cat build/DEBIAN/control | grep Arch | cut -d " " -f 2`"
+  [ -f "release/remaster_"$version"_"$arch".deb" ] && rm "release/remaster_"$version"_"$arch".deb"
+  mv -v "build.deb" "release/remaster_"$version"_"$arch".deb"
+}
 
 
 case "$1" in
@@ -71,7 +100,10 @@ case "$1" in
   build)
     build || exit 1
     ;;
+  build_deb)
+    build_deb || exit 1
+    ;;
   *)
-    echo "Usage: install | clean | debug | build"
+    echo "Usage: install | clean | debug | build_deb"
     exit 1
 esac
