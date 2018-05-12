@@ -11,5 +11,4 @@
  * add feature build debian packages
  * add Doc "Server Bedienung"
  * split functions
- * seperte config into /etc/remaster/
-
+ * separate config into /etc/remaster/
