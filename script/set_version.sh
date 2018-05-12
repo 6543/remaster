@@ -20,3 +20,7 @@ date=`date +%Y-%m-%d`
   echo $date - $version >> changes/remaster.md
   echo pleace update changes/remaster.md
 }
+
+[ -f "DEBIAN/control" ] && {
+  sed -i "s/Version:\ .\..\../Version:\ $version_sed/g" "DEBIAN/control"
+}
