@@ -1,0 +1,31 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#chroot_umount [chroot_dir]
+function chroot_umount() {
+	echo -n "unmount chroot ... "
+
+	#check chroot dir
+	chroot_dir="$1"
+	[ -d "$chroot_dir" ] || {
+		echo "### ERROR ### chroot_umount: chroot directory not exist!"
+		return 12
+	}
+
+	for d in "$chroot_dir/tmp" "$chroot_dir/root" "$chroot_dir/proc" "$chroot_dir/dev" ; do
+   		umount $d
+   		retval=$?
+   		[ "$retval" -gt 0 ] && {
+      		echo "### ERROR ### chroot_umount: can't umount \"$d\"!"
+      		return 21
+   		}
+	done
+
+	echo "done"
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  chroot_umount $@
+}

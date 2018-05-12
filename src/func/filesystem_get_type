@@ -1,0 +1,15 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#filesystem_get_type [dir]
+#(String)-> ext4, ext2, btfs, fuse, ...
+function filesystem_get_type() {
+	fs_aTemp=(`df -T "$1"`)
+	echo ${fs_aTemp[9]}
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  filesystem_get_type $@
+}

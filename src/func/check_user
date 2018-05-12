@@ -1,0 +1,17 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#check_user
+function check_user() {
+	#check root
+	[ "`whoami`" == "root" ] || {
+		echo "### ERROR ### Remaster need ROOT permision!"
+		return 10
+	}
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  check_user $@
+}
