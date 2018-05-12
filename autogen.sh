@@ -27,7 +27,7 @@ function copy() {
     #changelog
     mkdir -p build/usr/share/doc/remaster
     cp -v changes/remaster.md build/usr/share/doc/remaster/changelog
-    gzip build/usr/share/doc/remaster/changelog
+    gzip --best build/usr/share/doc/remaster/changelog
 }
 
 #config ...
@@ -47,19 +47,37 @@ function set_libdir() {
 #modes
 function debug() {
     clean
+
+    #prebuild
     copy
     set_rootdir "`pwd`/build"
     set_libdir "`pwd`/build/usr/lib/remaster"
 }
 function install() {
+    #überprüfe auf root
+    [ "`id -u`" != "0" ] && { echo "Error start as root"; exit 1; }
+
+    #lösche alltes build dir
     clean
+
+    #prebuild
     copy
     set_rootdir ""
     set_libdir "/usr/lib/remaster"
-    #cp -f -r build/* /
+
+    #set owner
+    chown -r root:root build/
+
+    #install
+    cp -f -r build/* /
 }
 function build-deb() {
+    #überprüfe auf root
+    [ "`id -u`" != "0" ] && { echo "Error start as root"; exit 1; }
+
+    #lösche alltes build dir
     clean
+
     #prebuild
     copy
     set_rootdir ""
@@ -70,9 +88,14 @@ function build-deb() {
     cp -v -r -f DEBIAN build/
     #create md5sums
     find ./build -type f -exec md5sum {} \; | grep -v './build/DEBIAN' | sed 's/\.\/build\///g' > build/DEBIAN/md5sums
+    chmod 0644 build/DEBIAN/md5sums
+
     #set size
     SIZE="`du --exclude=build/DEBIAN -c build/ | cut -f 1 | tail -n 1`"
     sed -i "s/<SIZE>/$SIZE/g" build/DEBIAN/control
+
+    #set owner
+    chown -r root:root build/
 
     ##
     #build deb
