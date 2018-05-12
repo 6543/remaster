@@ -1,0 +1,31 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#iso_create [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
+function iso_create() {
+	echo -n "create iso ..."
+
+	chroot_path="$1"
+	iso_extr_dir="$2"
+	iso_destination="$3"
+	iso_lable="$4"
+
+	[ -e "$iso_destination" ] && rm "$iso_destination"
+
+	xorriso -as mkisofs -graft-points -c isolinux/boot.cat -b isolinux/isolinux.bin \
+	-no-emul-boot -boot-info-table -boot-load-size 4 -isohybrid-mbr \
+	"$iso_extr_dir/isolinux/isolinux.bin" \
+	-eltorito-alt-boot -e boot/grub/efi.img -no-emul-boot \
+	-isohybrid-gpt-basdat -V "$iso_lable" \
+	-o "$iso_destination" \
+	-r -J "$iso_extr_dir" \
+	--sort-weight 0 / --sort-weight 2 /boot --sort-weight 1 /isolinux
+
+	echo "done"
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  iso_create $@
+}

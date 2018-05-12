@@ -1,0 +1,68 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#error_code [error_level]
+function error_code() {
+	code="$1"
+ 	case $code in
+  	"")
+			echo $'ID:\tDescription\n----------------------------------------------------\n1\tAllgemeiner Fehler\n2\tNo Paramters / wrong parameters'
+			echo $'3\tWrong Settings\n4\tProgramm missing\n\n10\tno root\n11\tfile no found\n12\tdir not found\n13\tcant create/delete file/dir'
+			echo $'14\tcorrupt file (unsquashfs, mount iso, ...)\n15\twrong file (iso has no squashfs-file ...)\n16\trequired Packet not found\n\n20\tmount error\n21\tunmoun error\n22\twrong filesystem'
+			;;
+		1)
+			echo "Allgemeiner Fehler"
+			;;
+		2)
+			echo "No Paramters / wrong parameters"
+  		;;
+  	3)
+  		echo "Wrong Settings"
+  		;;
+  	4)
+  		echo "Programm missing"
+  		;;
+  	10)
+  		echo "not executed as Root"
+  		;;
+  	11)
+  		echo "file no found"
+  		;;
+  	12)
+  		echo "dir not found"
+  		;;
+  	13)
+  		echo "cant create/delete file/dir"
+  		;;
+  	14)
+  		echo "corrupt file (unsquashfs, mount iso, ...)"
+  		;;
+  	15)
+  		echo "wrong file (iso has no squashfs-file ...)"
+  		;;
+		16)
+			echo "required Packet not found"
+			;;
+  	20)
+  		echo "tmount error"
+  		;;
+  	21)
+  		echo "unmoun error"
+  		;;
+  	22)
+  		echo "wrong filesystem"
+  		;;
+		all)
+		  error_code
+			;;
+  	*)
+  		echo $'No Defined Error Code.\nPerhaps an Error ocure on a Command wich was started by this Skritp.'
+  		;;
+	esac
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  error_code $@
+}

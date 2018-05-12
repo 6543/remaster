@@ -1,0 +1,22 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#chroot_is_mounted [chroot_dir]
+#(Boolean)-> true | false
+function chroot_is_mounted() {
+	#$1 = chroot directory
+
+	if [ "`mount | grep "$1"`" != "" ] ; then
+		#ther is smething mounted
+		echo "true"
+	else
+		#nothing mounted
+		echo "false"
+	fi
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+  chroot_is_mounted $@
+}

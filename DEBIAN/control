@@ -1,0 +1,12 @@
+Package: remaster
+Source: remaster
+Version: 1.9.3
+Architecture: all
+Maintainer: 6543 <6543@obermui.de>
+Installed-Size: <SIZE>
+Depends: squashfs-tools, xorriso, wget, sed (>= 4.2), sendemail, bash (>= 4.3)
+Suggests: nfs-kernel-server, isc-dhcp-server
+Section: utils
+Priority: optional
+Homepage: https://github.com/6543/remaster
+Description: The aim of this Project is to create a daemon for a server, witch update live systems.
