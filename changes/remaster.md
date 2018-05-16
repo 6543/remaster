@@ -6,3 +6,15 @@
 
 2018-05-10 - 1.9.3
  * hotfix-1.9.3
+
+2018-05-12 - 2.0.0
+ * add feature build debian packages
+ * add Doc "Server Bedienung"
+ * split functions
+ * separate config into /etc/remaster/
+
+2018-05-13 - 2.0.1
+ * Update-Prüfmechanismus #15
+
+2018-05-13 - 2.0.2
+ * hotfix-2.0.2 ( create release folder if not exist )

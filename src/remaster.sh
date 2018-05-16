@@ -1,7 +1,7 @@
 #!/bin/bash
-#@version 1.9.3
+#@version 2.0.2
 #@autor 6543@obermui.de
-#@date 2018-05-10
+#@date 2018-05-13
 #@licence GNUv3
 
 #####################################################################################
@@ -89,6 +89,8 @@ function main_renew() {
 
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+  check_update | tee -a "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
 
@@ -237,6 +239,8 @@ function main_update_pxe() {
   check_user
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
+  check_update | tee -a "$log_file"
+
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
@@ -357,6 +361,8 @@ function main_update_iso() {
   check_user
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
+  check_update | tee -a "$log_file"
+
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
@@ -463,11 +469,6 @@ function main_update_iso() {
 
 
   on_exit 0
-}
-
-#remaster.sh update
-function main_update() {
-  main_update_pxe
 }
 
 #####################################################################################
