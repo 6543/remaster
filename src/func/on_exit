@@ -4,23 +4,26 @@
 
 #on_exit [error_level]
 function on_exit() {
-  #send log and errorlevel[success/errorr xy]
+  ### send mail
+  [ -n "$log_mail_aim" ] && {
+    #send log and errorlevel[success/errorr xy]
+    if [ "$1" != "0" ]; then
+      log_mail_subject="$log_mail_subject [ERROR]"
+    else
+      log_mail_subject="$log_mail_subject [Success]"
+    fi
 
-  if [ "$1" != "0" ]; then
-    log_mail_subject="$log_mail_subject [ERROR]"
-  else
-    log_mail_subject="$log_mail_subject [Success]"
-  fi
+    #Mail Body:
+    for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
+      {
+        echo "$log_mail_subject"
+        echo $'####################################################################################\n\n'
+        cat "$log_file"
+      } | sendemail -s "$log_mail_smtp" -f "$log_mail_source" -t "$mail_aim" -u "$log_mail_subject" -o tls=no
+    done
+  }
 
-  #Mail Body:
-  for mail_aim in `echo "$log_mail_aim" | tr "," " "`; do
-    {
-      echo "$log_mail_subject"
-      echo $'####################################################################################\n\n'
-      cat "$log_file"
-    } | sendemail -s "$log_mail_smtp" -f "$log_mail_source" -t "$mail_aim" -u "$log_mail_subject" -o tls=no
-  done
-
+  ### clean up
   [ "$1" != "0" ] && {
     chroot_umount$distro "$chroot_path" 2> /dev/null
     workspace_erase "$iso_extr_dir/" "$chroot_path/" 2> /dev/null
