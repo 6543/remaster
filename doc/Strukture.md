@@ -94,6 +94,8 @@
 ----
 
 ## Jobs
+  * Read Confs -> get time interfall I
+  * Exec remaster <Conf> for I
 
 ----
 
