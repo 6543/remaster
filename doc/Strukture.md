@@ -65,6 +65,47 @@
 
 ----
 
-lxc
+## lxc
+
 -> chroot_sh exec lxc-attach
+
 -> chroot_dir = container name
+
+----
+
+## PXE
+
+-> Install
+  * DHCP Relay
+  * NFS-Server
+  * TFTP-Server
+  * [Samba]
+
+-> Setup
+  * (use <Lib>/proj/<proj> func)
+  * SMB/NFS LiveSys export
+  * TFTP (Boot Menue; Boot Loader; Kernel&Initrd)
+
+-> Deinstall
+  * RM TFTP-Root
+  * RM SMB/NFS LiveSys export
+  * del DHCP Relay conf
+
+----
+
+## Jobs
+
+----
+
+## Web
+
+show/edit #Configs
+
+show (+live) #Logs
+
+start/stop/plan #Jobs
+
+start/stop/edit #PXE menue
+  * default
+  * all / single / none
+  * live view new clients
