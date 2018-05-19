@@ -12,6 +12,7 @@ The aim of this Project is to create a daemon for a server, witch update live sy
 - wget
 - sed
 - sendemail
+- curl
 
 ## To Do
 
