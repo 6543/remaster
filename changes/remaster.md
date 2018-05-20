@@ -18,3 +18,9 @@
 
 2018-05-13 - 2.0.2
  * hotfix-2.0.2 ( create release folder if not exist )
+
+2018-05-20 - 2.0.3
+ * make email, proxy optional
+ * change Strukture.md
+ * add config check
+ * some help scripts

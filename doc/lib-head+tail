@@ -2,10 +2,12 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
-#beginn func
-
+#<function> [param]
+function <function>() {
+    #Code of <function>
+}
 
 #this func is standalone executable
 [ -n "$1" ] && {
-    check_user
+    <function> $@
 }
