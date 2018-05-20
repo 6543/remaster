@@ -25,6 +25,37 @@ function check_config() {
     }
 
 
+    #check live-system files
+    if [ -f "$iso_source" ]; then
+        if [ -n "$iso_destination" ] && [ -d "${iso_destination%/*}" ]; then
+            # iso_source -> iso_destination
+            # iso_source -> squashfs [optinal]
+        else
+            if [ -n "$filesystem_source" ] && [ -d "${filesystem_source%/*}" ]; then
+                # iso_source -> squashfs
+            else
+                # ERROR
+                echo "No corect AIM in Settings" | tee -a "$log_file"
+                return 3
+            fi
+        fi
+    else
+        if [ -f "$filesystem_source" ]; then
+            if [ -n "$iso_destination" ]; then
+                # ERROR
+                echo "only Squashfs source in Settings, cant creat ISO" | tee -a "$log_file"
+                return 3
+            else
+                # squashfs -> squashfs
+            fi
+        else
+            # ERROR
+            echo "No corect Source in Settings" | tee -a "$log_file"
+            return 3
+        fi
+    fi
+
+
 }
 
 #this func is standalone executable
