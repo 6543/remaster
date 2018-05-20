@@ -63,12 +63,12 @@ function main_renew() {
   echo "### S e t t i n g s ###" >> "$log_file"
   echo "#CD/DVD" >> "$log_file"
   echo "iso_source=\"$iso_source\"" >> "$log_file"
-  echo "iso_destination=\"$iso_destination\"" >> "$log_file"
+  echo "iso_aim=\"$iso_aim\"" >> "$log_file"
   echo "iso_lable=\"$iso_lable\"" >> "$log_file"
   echo >> "$log_file"
 
   echo "#Filesystem (for pxe)"  >> "$log_file"
-  echo "filesystem_source=\"$filesystem_source\""  >> "$log_file"
+  echo "squashfs_path=\"$squashfs_path\""  >> "$log_file"
   echo >> "$log_file"
 
   echo "#Network" >> "$log_file"
@@ -79,7 +79,7 @@ function main_renew() {
   echo >> "$log_file"
 
   echo "#remaster_script" >> "$log_file"
-  echo "distro=\"$distro\"" >> "$log_file"
+  echo "project=\"$project\"" >> "$log_file"
   echo >> "$log_file"
 
   echo "log_file=\"$log_file\""
@@ -111,7 +111,7 @@ function main_renew() {
 
   check_update >> "$log_file"
 
-  [ "$distro" != "" ] && distro="_$distro"
+  [ "$project" != "" ] && project="_$project"
 
   # 2. Entpacke ISO
   iso_extract "$iso_source" "$iso_extr_dir"
@@ -128,12 +128,12 @@ function main_renew() {
 
   # 4. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$distro "$chroot_path" >> "$log_file"
+  chroot_initial$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
   [ -n "$proxy_host" ] && {
-    proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    proxy_enable$project "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -141,12 +141,12 @@ function main_renew() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 6. Updaten von Desinfec't:
-  os_update$distro "$chroot_path" >> "$log_file"
+  os_update$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 7. Installation optionaler Tools:
 
-  tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
+  tools_add$project "$chroot_path" "$tools_list" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #addo ClamAV to conky_info
@@ -169,7 +169,7 @@ function main_renew() {
 
   # 9. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$distro "$chroot_path" >> "$log_file"
+  chroot_umount$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -186,23 +186,23 @@ function main_renew() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # wenn iso gewünscht
-  [ "$iso_destination" != "" ] && {
-    iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
+  [ "$iso_aim" != "" ] && {
+    iso_create$project "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
   # wenn filesystem gewünscht
-  [ "$filesystem_source" != "" ] && {
+  [ "$squashfs_path" != "" ] && {
     #wen bereits forhanden dann löschen
-    [ -f "$filesystem_source" ] && rm "$filesystem_source"
-    cp "$filesystem_img" "$filesystem_source" >> "$log_file"
+    [ -f "$squashfs_path" ] && rm "$squashfs_path"
+    cp "$filesystem_img" "$squashfs_path" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-    chmod 666 "$filesystem_source"
+    chmod 666 "$squashfs_path"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
-  chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
+  chmod 666 "$iso_aim" "$filesystem_img" >> "$log_file"
 
   workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -226,7 +226,7 @@ function main_update_pxe() {
 
   echo "### S e t t i n g s ###" >> "$log_file"
   echo "#Filesystem (for pxe)"  >> "$log_file"
-  echo "filesystem_source=\"$filesystem_source\""
+  echo "squashfs_path=\"$squashfs_path\""
   echo >> "$log_file"
 
   echo "#Network" >> "$log_file"
@@ -235,7 +235,7 @@ function main_update_pxe() {
   echo >> "$log_file"
 
   echo "#remaster_script" >> "$log_file"
-  echo "distro=\"$distro\"" >> "$log_file"
+  echo "project=\"$project\"" >> "$log_file"
   echo >> "$log_file"
 
   echo "log_file=\"$log_file\""
@@ -266,20 +266,20 @@ function main_update_pxe() {
   check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  [ "$distro" != "" ] && distro="_$distro"
+  [ "$project" != "" ] && project="_$project"
 
   # 1. Entpacken der Dateien des Live-Systems
-  [ -e "$filesystem_source" ] || {
-    echo "### ERROR ### \"$filesystem_source\" does not exist!" >> "$log_file"
+  [ -e "$squashfs_path" ] || {
+    echo "### ERROR ### \"$squashfs_path\" does not exist!" >> "$log_file"
     on_exit 15 >> "$log_file"
   }
 
-  filesystem_extract "$filesystem_source" "$chroot_path" >> "$log_file"
+  filesystem_extract "$squashfs_path" "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 2. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$distro "$chroot_path" >> "$log_file"
+  chroot_initial$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 3. Setzen der Netzwerk-Einstellungen:
@@ -288,7 +288,7 @@ function main_update_pxe() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 4. Updaten von Desinfec't:
-  os_update$distro "$chroot_path" >> "$log_file"
+  os_update$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Manuelle Aktionen - deaktiviert
@@ -301,7 +301,7 @@ function main_update_pxe() {
 
   # 6. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$distro "$chroot_path" >> "$log_file"
+  chroot_umount$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -311,13 +311,13 @@ function main_update_pxe() {
   }
 
   # 5. Packen und Ersetzen der Dateien
-  rm "$filesystem_source" >> "$log_file"
+  rm "$squashfs_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  filesystem_pack "$chroot_path"  "$filesystem_source" >> "$log_file"
+  filesystem_pack "$chroot_path"  "$squashfs_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  chmod 777 "$filesystem_source" >> "$log_file"
+  chmod 777 "$squashfs_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   workspace_erase "$chroot_path/" >> "$log_file"
@@ -343,12 +343,12 @@ function main_update_iso() {
   echo "### S e t t i n g s ###" >> "$log_file"
   echo "#CD/DVD" >> "$log_file"
   echo "iso_source=\"$iso_source\"" >> "$log_file"
-  echo "iso_destination=\"$iso_destination\"" >> "$log_file"
+  echo "iso_aim=\"$iso_aim\"" >> "$log_file"
   echo "iso_lable=\"$iso_lable\"" >> "$log_file"
   echo >> "$log_file"
 
   echo "#Filesystem (for pxe)"  >> "$log_file"
-  echo "filesystem_source=\"$filesystem_source\""  >> "$log_file"
+  echo "squashfs_path=\"$squashfs_path\""  >> "$log_file"
   echo >> "$log_file"
 
   echo "#Network" >> "$log_file"
@@ -359,7 +359,7 @@ function main_update_iso() {
   echo >> "$log_file"
 
   echo "#remaster_script" >> "$log_file"
-  echo "distro=\"$distro\"" >> "$log_file"
+  echo "project=\"$project\"" >> "$log_file"
   echo >> "$log_file"
 
   echo "log_file=\"$log_file\""
@@ -391,7 +391,7 @@ function main_update_iso() {
   check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  [ "$distro" != "" ] && distro="_$distro"
+  [ "$project" != "" ] && project="_$project"
 
   # 2. Entpacke ISO
   iso_extract "$iso_source" "$iso_extr_dir"
@@ -418,12 +418,12 @@ function main_update_iso() {
 
   # 4. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$distro "$chroot_path" >> "$log_file"
+  chroot_initial$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
   [ -n "$proxy_host" ] && {
-    proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    proxy_enable$project "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -431,12 +431,12 @@ function main_update_iso() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 6. Updaten von Desinfec't:
-  os_update$distro "$chroot_path" >> "$log_file"
+  os_update$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 7. Installation optionaler Tools:
 
-  tools_add$distro "$chroot_path" "$tools_list" >> "$log_file"
+  tools_add$project "$chroot_path" "$tools_list" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #addo ClamAV to conky_info
@@ -454,7 +454,7 @@ function main_update_iso() {
 
   # 9. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$distro "$chroot_path" >> "$log_file"
+  chroot_umount$project "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -471,23 +471,23 @@ function main_update_iso() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # wenn iso gewünscht
-  [ "$iso_destination" != "" ] && {
-    iso_create$distro "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable" >> "$log_file"
+  [ "$iso_aim" != "" ] && {
+    iso_create$project "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
   # wenn filesystem gewünscht
-  [ "$filesystem_source" != "" ] && {
+  [ "$squashfs_path" != "" ] && {
     #wen bereits forhanden dann löschen
-    [ -f "$filesystem_source" ] && rm "$filesystem_source"
-    cp "$filesystem_img" "$filesystem_source" >> "$log_file"
+    [ -f "$squashfs_path" ] && rm "$squashfs_path"
+    cp "$filesystem_img" "$squashfs_path" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-    chmod 666 "$filesystem_source"
+    chmod 666 "$squashfs_path"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
-  chmod 666 "$iso_destination" "$filesystem_img" >> "$log_file"
+  chmod 666 "$iso_aim" "$filesystem_img" >> "$log_file"
 
   #11. End
   workspace_erase "$iso_extr_dir/" "$chroot_path/" >> "$log_file"
@@ -545,16 +545,16 @@ source <LIBDIR>/func/filesystem_get_type
 #iso_extract [iso_source] [iso_extr_dir]
 source <LIBDIR>/func/iso_extract
 
-#iso_create [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
+#iso_create [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
 source <LIBDIR>/func/iso_create
 
-#iso_create_desinfect2015 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
+#iso_create_desinfect2015 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
 function iso_create_desinfect2015() {
   echo "prepere iso folder ... "
 
   chroot_path="$1"
   iso_extr_dir="$2"
-  iso_destination="$3"
+  iso_aim="$3"
   iso_lable="$4"
 
   #desinfect
@@ -563,16 +563,16 @@ function iso_create_desinfect2015() {
 
   echo "done"
 
-  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable"
+  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
 }
 
-#iso_create_desinfect2016 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
+#iso_create_desinfect2016 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
 function iso_create_desinfect2016() {
   #echo "prepere iso folder ... "
 
   chroot_path="$1"
   iso_extr_dir="$2"
-  iso_destination="$3"
+  iso_aim="$3"
   iso_lable="$4"
 
   #desinfect
@@ -581,19 +581,19 @@ function iso_create_desinfect2016() {
 
   #echo "done"
 
-  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable"
+  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
 }
 
-#iso_create_desinfect2017 [chroot_path] [iso_extr_dir] [iso_destination] [iso_lable]
-function iso_create_desinfect2017() {
+#iso_create_desinfect.17 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
+function iso_create_desinfect.17() {
   #echo "prepere iso folder ... "
 
   chroot_path="$1"
   iso_extr_dir="$2"
-  iso_destination="$3"
+  iso_aim="$3"
   iso_lable="$4"
 
-  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_destination" "$iso_lable"
+  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
 }
 
 ### chroot ###
@@ -645,8 +645,8 @@ function chroot_initial_desinfect2016() {
   echo "done"
 }
 
-#chroot_initial_desinfect2017 [chroot_dir]
-function chroot_initial_desinfect2017() {
+#chroot_initial_desinfect.17 [chroot_dir]
+function chroot_initial_desinfect.17() {
   #$1 = chroot dir
 
   chroot_initial "$1"
@@ -707,8 +707,8 @@ function chroot_umount_desinfect2016() {
   echo "done"
 }
 
-#chroot_umount_desinfect2017 [chroot_dir]
-function chroot_umount_desinfect2017() {
+#chroot_umount_desinfect.17 [chroot_dir]
+function chroot_umount_desinfect.17() {
   #call main mount
   chroot_umount "$1"
 }
@@ -835,8 +835,8 @@ function proxy_enable_desinfect2016() {
   echo "done"
 }
 
-#proxy_enable_desinfect2017 [chroot_dir] [proxy_host] [proxy_port]
-function proxy_enable_desinfect2017() {
+#proxy_enable_desinfect.17 [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable_desinfect.17() {
 
   proxy_enable $1 $2 $3
 
@@ -1248,8 +1248,8 @@ function os_update_desinfect2016() {
   echo "update virus definitions done"
 }
 
-#os_update_desinfect2017 [chroot_dir]
-function os_update_desinfect2017() {
+#os_update_desinfect.17 [chroot_dir]
+function os_update_desinfect.17() {
   #$1 = chroot directory
 
   chroot_dir="$1"
@@ -1370,8 +1370,8 @@ function tools_add_desinfect2016() {
   sourcelist_desinfect_set_nomal2016 "$chroot_dir"
 }
 
-#tools_add_desinfect2017 [chroot_dir] [tools_list]
-function tools_add_desinfect2017() {
+#tools_add_desinfect.17 [chroot_dir] [tools_list]
+function tools_add_desinfect.17() {
   #$1 = chroot directory
   chroot_dir="$1"
   tools_list="$2"

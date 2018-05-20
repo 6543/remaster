@@ -6,21 +6,21 @@
 function check_config() {
 
     #Project
-    [ -f "<LIBDIR>/proj/$distro" ] || {
-        echo "No Project \"$distro\" is not supported"
+    [ -f "<LIBDIR>/proj/$project" ] || {
+        echo "No Project \"$project\" is not supported"
         return 3
     }
 
     #live-system files
     if [ -f "$iso_source" ]; then
-        if [ -n "$iso_destination" ] && [ -d "${iso_destination%/*}" ]; then
+        if [ -n "$iso_aim" ] && [ -d "${iso_aim%/*}" ]; then
             #Lable
-            [ -z "$iso_lable" ] && iso_lable="$distro"
+            [ -z "$iso_lable" ] && iso_lable="$project"
 
-            echo 'iso_source -> iso_destination'
+            echo 'iso_source -> iso_aim'
             echo 'iso_source -> squashfs [optinal]'
         else
-            if [ -n "$filesystem_source" ] && [ -d "${filesystem_source%/*}" ]; then
+            if [ -n "$squashfs_path" ] && [ -d "${squashfs_path%/*}" ]; then
                 echo 'iso_source -> squashfs'
             else
                 # ERROR
@@ -29,8 +29,8 @@ function check_config() {
             fi
         fi
     else
-        if [ -f "$filesystem_source" ]; then
-            if [ -n "$iso_destination" ]; then
+        if [ -f "$squashfs_path" ]; then
+            if [ -n "$iso_aim" ]; then
                 # ERROR
                 echo "only Squashfs source in Settings, cant creat ISO"
                 return 3
