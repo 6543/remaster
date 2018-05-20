@@ -1,0 +1,13 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#<function>
+function <function>() {
+    #Code of <function>
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+    <function> $@
+}
