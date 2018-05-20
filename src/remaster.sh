@@ -113,9 +113,10 @@ function main_renew() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
-
-  proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+  [ -n "$proxy_host" ] && {
+    proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+  }
 
   dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
@@ -397,9 +398,10 @@ function main_update_iso() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
-
-  proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+  [ -n "$proxy_host" ] && {
+    proxy_enable$distro "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+  }
 
   dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
