@@ -32,8 +32,7 @@ fi
 
 #remaster.sh renew
 function main_renew() {
-
-  [ -f "$log_file" ] || touch "$log_file"
+  check_config
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"
@@ -195,8 +194,7 @@ function main_renew() {
 #remaster.sh update_pxe
 function main_update_pxe() {
 
-  [ "$log_file" == "" ] && log_file="`mktemp`"
-  [ -f "$log_file" ] || touch "$log_file"
+  check_config
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"
@@ -308,7 +306,7 @@ function main_update_pxe() {
 
 #remaster.sh update_iso #in arbeit
 function main_update_iso() {
-  [ -f "$log_file" ] || touch "$log_file"
+  check_config
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"

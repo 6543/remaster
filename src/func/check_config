@@ -2,12 +2,31 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
-#<function>
-function <function>() {
-    #Code of <function>
+#check_config [param]
+function check_config() {
+
+    #LOG
+    [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
+
+    if [ -f "$log_file" ]; then
+        echo > "$log_file"
+    else
+        #check if folder exist
+        [ -d "${log_file%/*}" ] || {
+            # N-> exit 3
+            echo "Directory for Log didnt exist"
+            exit 3
+        }
+        #create LOG
+        touch "$log_file"
+    fi
+
+
+
+
 }
 
 #this func is standalone executable
 [ -n "$1" ] && {
-    <function> $@
+    check_config $@
 }
