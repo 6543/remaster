@@ -490,6 +490,8 @@ source <LIBDIR>/func/check_user
 # -> 0 | -> 16
 source <LIBDIR>/func/check_dependency
 
+#check_update
+source <LIBDIR>/func/check_update
 
 ### Workspace ###
 
