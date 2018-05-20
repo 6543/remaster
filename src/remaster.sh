@@ -25,6 +25,23 @@ else
     exit 1
   fi
 fi
+#check LOG
+{
+  [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
+
+  if [ -f "$log_file" ]; then
+    echo > "$log_file"
+  else
+    #check if folder exist
+    [ -d "${log_file%/*}" ] || {
+        # N-> exit 3
+        echo "Directory for Log didnt exist"
+        exit 3
+    }
+    #create LOG
+    touch "$log_file"
+  fi
+}
 
 #####################################################################################
 ################## M o d e s ########################################################
@@ -32,8 +49,7 @@ fi
 
 #remaster.sh renew
 function main_renew() {
-
-  [ -f "$log_file" ] || touch "$log_file"
+  #Start LOG
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"
@@ -88,6 +104,9 @@ function main_renew() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_dependency
+  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+  check_config "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_update | tee -a "$log_file"
@@ -195,8 +214,7 @@ function main_renew() {
 #remaster.sh update_pxe
 function main_update_pxe() {
 
-  [ "$log_file" == "" ] && log_file="`mktemp`"
-  [ -f "$log_file" ] || touch "$log_file"
+  #Start LOG
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"
@@ -243,6 +261,9 @@ function main_update_pxe() {
   check_update | tee -a "$log_file"
 
   check_dependency
+  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+  check_config "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
@@ -308,7 +329,7 @@ function main_update_pxe() {
 
 #remaster.sh update_iso #in arbeit
 function main_update_iso() {
-  [ -f "$log_file" ] || touch "$log_file"
+  #Start LOG
   tail -f "$log_file" --pid="$$" &
 
   chroot_path="`mktemp -d`"
@@ -365,6 +386,9 @@ function main_update_iso() {
   check_update | tee -a "$log_file"
 
   check_dependency
+  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+
+  check_config "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
@@ -478,6 +502,9 @@ function main_update_iso() {
 #####################################################################################
 
 ### Error Handlings ###
+
+#check_config [log_file]
+source <LIBDIR>/func/check_config
 
 #on_exit [error_level]
 source <LIBDIR>/func/on_exit
