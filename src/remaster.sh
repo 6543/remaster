@@ -503,6 +503,9 @@ function main_update_iso() {
 
 ### Error Handlings ###
 
+#check_config [log_file]
+source <LIBDIR>/func/check_config
+
 #on_exit [error_level]
 source <LIBDIR>/func/on_exit
 
