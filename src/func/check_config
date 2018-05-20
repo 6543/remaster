@@ -2,15 +2,17 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
-#check_config [param]
+#check_config [log_file]
 function check_config() {
 
     #LOG
-    [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
+    {
+      log_file=$1
+      [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
 
-    if [ -f "$log_file" ]; then
+      if [ -f "$log_file" ]; then
         echo > "$log_file"
-    else
+      else
         #check if folder exist
         [ -d "${log_file%/*}" ] || {
             # N-> exit 3
@@ -19,9 +21,8 @@ function check_config() {
         }
         #create LOG
         touch "$log_file"
-    fi
-
-
+      fi
+    }
 
 
 }
