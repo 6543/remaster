@@ -1,5 +1,5 @@
 #!/bin/bash
-#@version 2.0.2-2
+#@version 2.0.3
 #@autor 6543@obermui.de
 #@date 2018-05-20
 #@licence GNUv3
