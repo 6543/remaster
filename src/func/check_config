@@ -38,11 +38,11 @@ function check_config() {
             #Lable
             [ -z "$iso_lable" ] && iso_lable="$distro"
 
-            # iso_source -> iso_destination
-            # iso_source -> squashfs [optinal]
+            echo 'iso_source -> iso_destination' | tee -a "$log_file"
+            echo 'iso_source -> squashfs [optinal]' | tee -a "$log_file"
         else
             if [ -n "$filesystem_source" ] && [ -d "${filesystem_source%/*}" ]; then
-                # iso_source -> squashfs
+                echo 'iso_source -> squashfs' | tee -a "$log_file"
             else
                 # ERROR
                 echo "No corect AIM in Settings" | tee -a "$log_file"
@@ -56,7 +56,7 @@ function check_config() {
                 echo "only Squashfs source in Settings, cant creat ISO" | tee -a "$log_file"
                 return 3
             else
-                # squashfs -> squashfs
+                echo 'squashfs -> squashfs' | tee -a "$log_file"
             fi
         else
             # ERROR
