@@ -25,6 +25,13 @@ function check_config() {
     }
 
 
+
+    #Project
+    [ -f "<LIBDIR>/proj/$distro" ] || {
+        echo "No Project \"$distrp\" is not supported" | tee -a "$log_file"
+        return 3
+    }
+
     #check live-system files
     if [ -f "$iso_source" ]; then
         if [ -n "$iso_destination" ] && [ -d "${iso_destination%/*}" ]; then
