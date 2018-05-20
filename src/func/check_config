@@ -2,33 +2,12 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
-#check_config [log_file]
+#check_config
 function check_config() {
-
-    #LOG
-    {
-      log_file=$1
-      [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
-
-      if [ -f "$log_file" ]; then
-        echo > "$log_file"
-      else
-        #check if folder exist
-        [ -d "${log_file%/*}" ] || {
-            # N-> exit 3
-            echo "Directory for Log didnt exist"
-            exit 3
-        }
-        #create LOG
-        touch "$log_file"
-      fi
-    }
-
-
 
     #Project
     [ -f "<LIBDIR>/proj/$distro" ] || {
-        echo "No Project \"$distro\" is not supported" | tee -a "$log_file"
+        echo "No Project \"$distro\" is not supported"
         return 3
     }
 
@@ -38,14 +17,14 @@ function check_config() {
             #Lable
             [ -z "$iso_lable" ] && iso_lable="$distro"
 
-            echo 'iso_source -> iso_destination' | tee -a "$log_file"
-            echo 'iso_source -> squashfs [optinal]' | tee -a "$log_file"
+            echo 'iso_source -> iso_destination'
+            echo 'iso_source -> squashfs [optinal]'
         else
             if [ -n "$filesystem_source" ] && [ -d "${filesystem_source%/*}" ]; then
-                echo 'iso_source -> squashfs' | tee -a "$log_file"
+                echo 'iso_source -> squashfs'
             else
                 # ERROR
-                echo "No corect AIM in Settings" | tee -a "$log_file"
+                echo "No corect AIM in Settings"
                 return 3
             fi
         fi
@@ -53,14 +32,14 @@ function check_config() {
         if [ -f "$filesystem_source" ]; then
             if [ -n "$iso_destination" ]; then
                 # ERROR
-                echo "only Squashfs source in Settings, cant creat ISO" | tee -a "$log_file"
+                echo "only Squashfs source in Settings, cant creat ISO"
                 return 3
             else
-                echo 'squashfs -> squashfs' | tee -a "$log_file"
+                echo 'squashfs -> squashfs'
             fi
         else
             # ERROR
-            echo "No corect Source in Settings" | tee -a "$log_file"
+            echo "No corect Source in Settings"
             return 3
         fi
     fi

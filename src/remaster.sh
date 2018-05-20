@@ -106,10 +106,10 @@ function main_renew() {
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_config "$log_file"
+  check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_update | tee -a "$log_file"
+  check_update >> "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
 
@@ -258,12 +258,12 @@ function main_update_pxe() {
   check_user
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_update | tee -a "$log_file"
+  check_update >> "$log_file"
 
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_config "$log_file"
+  check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
@@ -383,12 +383,12 @@ function main_update_iso() {
   check_user
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_update | tee -a "$log_file"
+  check_update >> "$log_file"
 
   check_dependency
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_config "$log_file"
+  check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   [ "$distro" != "" ] && distro="_$distro"
@@ -503,7 +503,7 @@ function main_update_iso() {
 
 ### Error Handlings ###
 
-#check_config [log_file]
+#check_config
 source <LIBDIR>/func/check_config
 
 #on_exit [error_level]
