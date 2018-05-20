@@ -8,10 +8,10 @@ date=`date +%Y-%m-%d`
   version_sed=`echo $version | sed 's/\./\\./g'`
 
   #nummer
-  sed -i "s/@version\ .\..\../@version\ $version_sed/g" src/remaster.sh
+  sed -i "/#@version\ /c\#@version\ $version_sed" src/remaster.sh
 
   #datum
-  sed -i "s/@date\ ....-..-../@date\ $date/g" src/remaster.sh
+  sed -i "/#@date\ /c\#@date\ $date" src/remaster.sh
 }
 
 [ -e "changes/remaster.md" ] && {
@@ -22,5 +22,5 @@ date=`date +%Y-%m-%d`
 }
 
 [ -f "DEBIAN/control" ] && {
-  sed -i "s/Version:\ .\..\../Version:\ $version_sed/g" "DEBIAN/control"
+  sed -i "/Version:\ /c\Version:\ $version_sed" "DEBIAN/control"
 }
