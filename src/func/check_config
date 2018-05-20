@@ -32,7 +32,7 @@ function check_config() {
         return 3
     }
 
-    #check live-system files
+    #live-system files
     if [ -f "$iso_source" ]; then
         if [ -n "$iso_destination" ] && [ -d "${iso_destination%/*}" ]; then
             # iso_source -> iso_destination
@@ -61,6 +61,8 @@ function check_config() {
             return 3
         fi
     fi
+
+
 
 
 }
