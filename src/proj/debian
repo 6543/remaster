@@ -13,7 +13,7 @@ project_relation="debian"
 
 
 #tools_add [chroot_dir] [tools_list]
-function tools_add() {
+function tools_add-debian() {
 	echo "add tools ... "
 	#$1 = chroot directory
 	chroot_dir="$1"
@@ -24,9 +24,10 @@ function tools_add() {
 	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
 	echo "done"
 }
+alias tools_add="tools_add-debian"
 
 #os_update [chroot_dir]
-function os_update() {
+function os_update-debian() {
 	echo "updating os ... "
 	#$1 = chroot directory
 
@@ -39,9 +40,10 @@ function os_update() {
 
 	echo "done"
 }
+alias os_update="os_update-debian"
 
 #proxy_enable [chroot_dir] [proxy_host] [proxy_port]
-function proxy_enable() {
+function proxy_enable-debian() {
   echo -n "enable proxy ... "
 
   chroot_dir="$1"
@@ -77,9 +79,10 @@ function proxy_enable() {
     fi
   fi
 }
+alias proxy_enable="proxy_enable-debian"
 
 #dns_set [chroot_dir] [domain] [nameserver]
-function dns_set() {
+function dns_set-debian() {
   echo -n "set dns config ... "
 
   rm "$chroot_dir/etc/resolv.conf"
@@ -92,3 +95,4 @@ function dns_set() {
 
   echo "done"
 }
+alias dns_set="dns_set-debian"
