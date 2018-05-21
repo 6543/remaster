@@ -5,5 +5,3 @@
 #desinfect.17
 # . -Y ubuntu.16.04 -> ubuntu -> debian
 source <LIBDIR>/proj/ubuntu.16.04
-
-TEST2="na"

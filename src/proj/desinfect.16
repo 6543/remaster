@@ -1,0 +1,7 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#desinfect.16
+# . -Y ubuntu.14.04 -> ubuntu -> debian
+source <LIBDIR>/proj/ubuntu.14.04
