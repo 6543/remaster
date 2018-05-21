@@ -111,8 +111,6 @@ function main_renew() {
 
   check_update >> "$log_file"
 
-  [ "$project" != "" ] && project="_$project"
-
   # 2. Entpacke ISO
   iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
 
@@ -128,12 +126,12 @@ function main_renew() {
 
   # 4. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$project "$chroot_path" >> "$log_file"
+  chroot_initial "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
   [ -n "$proxy_host" ] && {
-    proxy_enable$project "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    proxy_enable "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -141,12 +139,12 @@ function main_renew() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 6. Updaten von Desinfec't:
-  os_update$project "$chroot_path" >> "$log_file"
+  os_update "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 7. Installation optionaler Tools:
 
-  tools_add$project "$chroot_path" "$tools_list" >> "$log_file"
+  tools_add "$chroot_path" "$tools_list" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #addo ClamAV to conky_info
@@ -169,7 +167,7 @@ function main_renew() {
 
   # 9. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$project "$chroot_path" >> "$log_file"
+  chroot_umount "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -187,7 +185,7 @@ function main_renew() {
 
   # wenn iso gewünscht
   [ "$iso_aim" != "" ] && {
-    iso_create$project "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
+    iso_create "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -266,8 +264,6 @@ function main_update_pxe() {
   check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  [ "$project" != "" ] && project="_$project"
-
   # 1. Entpacken der Dateien des Live-Systems
   [ -e "$squashfs_path" ] || {
     echo "### ERROR ### \"$squashfs_path\" does not exist!" >> "$log_file"
@@ -279,7 +275,7 @@ function main_update_pxe() {
 
   # 2. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$project "$chroot_path" >> "$log_file"
+  chroot_initial "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 3. Setzen der Netzwerk-Einstellungen:
@@ -288,7 +284,7 @@ function main_update_pxe() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 4. Updaten von Desinfec't:
-  os_update$project "$chroot_path" >> "$log_file"
+  os_update "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Manuelle Aktionen - deaktiviert
@@ -301,7 +297,7 @@ function main_update_pxe() {
 
   # 6. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$project "$chroot_path" >> "$log_file"
+  chroot_umount "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -391,8 +387,6 @@ function main_update_iso() {
   check_config >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  [ "$project" != "" ] && project="_$project"
-
   # 2. Entpacke ISO
   iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
 
@@ -418,12 +412,12 @@ function main_update_iso() {
 
   # 4. Vorbereiten für chroot-Umgebung:
 
-  chroot_initial$project "$chroot_path" >> "$log_file"
+  chroot_initial "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 5. Setzen der Netzwerk-Einstellungen:
   [ -n "$proxy_host" ] && {
-    proxy_enable$project "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    proxy_enable "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -431,12 +425,12 @@ function main_update_iso() {
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 6. Updaten von Desinfec't:
-  os_update$project "$chroot_path" >> "$log_file"
+  os_update "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   # 7. Installation optionaler Tools:
 
-  tools_add$project "$chroot_path" "$tools_list" >> "$log_file"
+  tools_add "$chroot_path" "$tools_list" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #addo ClamAV to conky_info
@@ -454,7 +448,7 @@ function main_update_iso() {
 
   # 9. Umount - Chroot Umgebung auflösen
 
-  chroot_umount$project "$chroot_path" >> "$log_file"
+  chroot_umount "$chroot_path" >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   #Überprüfen ob alles ausgehängt wurde
@@ -472,7 +466,7 @@ function main_update_iso() {
 
   # wenn iso gewünscht
   [ "$iso_aim" != "" ] && {
-    iso_create$project "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
+    iso_create "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
     error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
   }
 
@@ -566,7 +560,10 @@ source <LIBDIR>/func/chroot_is_mounted
 #chroot_sh [chroot_dir] [command]
 source <LIBDIR>/func/chroot_sh
 
+####################################
+### Workaround - set Project
 source <LIBDIR>/proj/desinfect.17
+####################################
 
 ### Handle Parameters & Modes ###
 
