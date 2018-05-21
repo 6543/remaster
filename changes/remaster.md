@@ -24,3 +24,9 @@
  * change Strukture.md
  * add config check
  * some help scripts
+
+2018-05-22 - 2.0.4
+ * add iso_source as URL
+ * restructure code
+ * use proj templates
+ * some help scripts
