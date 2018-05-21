@@ -15,17 +15,18 @@ function iso_extract() {
 		return 10
 	}
 
+	iso_extr_dir="$2"
+	[ -d "$iso_extr_dir" ] || {
+		echo "### ERROR ### iso_extract: aim directory not exist!"
+		return 12
+	}
+
 	iso_source="$1"
 	[ -f "$iso_source" ] || {
 		echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
 		return 11
 	}
 
-	iso_extr_dir="$2"
-	[ -d "$iso_extr_dir" ] || {
-		echo "### ERROR ### iso_extract: aim directory not exist!"
-		return 12
-	}
 
 	#mace tmp mountpoint
 	tmpdir="`mktemp -d`"
