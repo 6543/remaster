@@ -69,14 +69,14 @@ function sourcelist_desinfect_set_extendet2017() {
   echo "done"
 }
 
-#os_update_desinfect.17 [chroot_dir]
-function os_update_desinfect.17() {
+#os_update-desinfect.17 [chroot_dir]
+function os_update-desinfect.17() {
   #$1 = chroot directory
 
   chroot_dir="$1"
 
-  #call main os_update
-  os_update "$chroot_dir"
+  #call main os_update from debian
+  os_update-debian "$chroot_dir"
 
   echo "update virus definitions ... "
 
@@ -162,37 +162,12 @@ function os_update_desinfect.17() {
 
   echo "update virus definitions done"
 }
+function os_update() { os_update-desinfect.17 $@ }
 
-#iso_create_desinfect.17 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
-function iso_create_desinfect.17() {
-  #echo "prepere iso folder ... "
+#proxy_enable-desinfect.17 [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable-desinfect.17() {
 
-  chroot_path="$1"
-  iso_extr_dir="$2"
-  iso_aim="$3"
-  iso_lable="$4"
-
-  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
-}
-
-#chroot_initial_desinfect.17 [chroot_dir]
-function chroot_initial_desinfect.17() {
-  #$1 = chroot dir
-
-  chroot_initial "$1"
-
-}
-
-#chroot_umount_desinfect.17 [chroot_dir]
-function chroot_umount_desinfect.17() {
-  #call main mount
-  chroot_umount "$1"
-}
-
-#proxy_enable_desinfect.17 [chroot_dir] [proxy_host] [proxy_port]
-function proxy_enable_desinfect.17() {
-
-  proxy_enable $1 $2 $3
+  proxy_enable-debian $1 $2 $3
 
   echo "enable proxy for desinfect's av ... "
 
@@ -262,14 +237,16 @@ function proxy_enable_desinfect.17() {
 
   echo "done"
 }
+function proxy_enable() { proxy_enable-desinfect.17 $@ }
 
-#tools_add_desinfect.17 [chroot_dir] [tools_list]
-function tools_add_desinfect.17() {
+#tools_add-desinfect.17 [chroot_dir] [tools_list]
+function tools_add-desinfect.17() {
   #$1 = chroot directory
   chroot_dir="$1"
   tools_list="$2"
 
   sourcelist_desinfect_set_extendet2017 "$chroot_dir"
-  tools_add "$chroot_dir" "$tools_list"
+  tools_add-debian "$chroot_dir" "$tools_list"
   sourcelist_desinfect_set_nomal2017 "$chroot_dir"
 }
+function tools_add() { tools_add-desinfect.17 $@ }
