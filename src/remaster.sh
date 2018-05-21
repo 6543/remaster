@@ -84,7 +84,7 @@ function main_renew() {
 
   echo "log_file=\"$log_file\""
   echo "log_mail_aim=\"$log_mail_aim\""
-  echo "log_mail_subject=\"$log_mail_subject\""
+  echo "log_mail_subject=\"$log_mail_subj >> "$log_file"ect\""
   echo ""
 
   echo "#Sonstiges" >> "$log_file"
@@ -100,10 +100,10 @@ function main_renew() {
   echo $'### R U N ... ###\n' >> "$log_file"
 
   #1. Set and Check Enviroment
-  check_user
+  check_user >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  check_dependency
+  check_dependency >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_config >> "$log_file"
@@ -114,7 +114,7 @@ function main_renew() {
   [ "$project" != "" ] && project="_$project"
 
   # 2. Entpacke ISO
-  iso_extract "$iso_source" "$iso_extr_dir"
+  iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
 
   # 3. Entpacken der Dateien des Live-Systems
   filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
@@ -255,12 +255,12 @@ function main_update_pxe() {
   echo $'### R U N ... ###\n' >> "$log_file"
 
   #1. Set and Check Enviroment
-  check_user
+  check_user >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_update >> "$log_file"
 
-  check_dependency
+  check_dependency >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_config >> "$log_file"
@@ -380,12 +380,12 @@ function main_update_iso() {
   echo $'### R U N ... ###\n' >> "$log_file"
 
   #1. Set and Check Enviroment
-  check_user
+  check_user >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_update >> "$log_file"
 
-  check_dependency
+  check_dependency >> "$log_file"
   error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
   check_config >> "$log_file"
@@ -394,7 +394,7 @@ function main_update_iso() {
   [ "$project" != "" ] && project="_$project"
 
   # 2. Entpacke ISO
-  iso_extract "$iso_source" "$iso_extr_dir"
+  iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
 
   # 3. Checke pxe version
   # if pxe is set
