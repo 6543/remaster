@@ -565,11 +565,8 @@ source <LIBDIR>/func/chroot_sh
 source <LIBDIR>/proj/desinfect.17
 ####################################
 
-### Handle Parameters & Modes ###
-
+###########################################################
+################# P r o c e s s ... #######################
+###########################################################
 #wenn kein modus angegebnen: default modus
-if [ -z "$1" ]; then
-  main_$modus_default
-else
-  main_$1 $2 $3 $4 $5 $6 $7 $8 $9
-fi
+main_renew
