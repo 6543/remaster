@@ -21,13 +21,13 @@ function iso_extract() {
 		return 12
 	}
 
-	iso_source_is_url=false
 	iso_source="$1"
 	[ -f "$iso_source" ] || {
 		#if it is an url...
-		if [ url-exist ]; then
-			iso_source_is_url=true
+		if [ "`check_url $iso_source`" == "true" ]; then
 			#dl to tmp + set iso_source
+			iso_tmp="`mktemp --suffix=.iso`"; rm "$iso_tmp"
+			wget -O "$iso_tmp" "$iso_source"
 		else
 			echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
 			return 11
@@ -49,7 +49,7 @@ function iso_extract() {
 	#clear tmp mountpoint
 	umount "$iso_source"
 	rm -r "$tmpdir"
-	[ "$iso_source_is_url" == "true" ] && rm "$iso_source"
+	[ -n "$iso_tmp" ] && rm "$iso_tmp"
 	tmpdir=
 
 	echo "done"
