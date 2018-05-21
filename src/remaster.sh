@@ -232,10 +232,7 @@ error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_fil
 #chroot $chroot_path /bin/bash
 #echo "Are You Finisch? Then Press [ENTER]"
 
-#config xrdp to start xfce
-echo '#!/bin/sh' > "$chroot_path"/etc/xrdp/startwm.sh
-echo "export LANG=\"de_DE.UTF-8\"" >> "$chroot_path"/etc/xrdp/startwm.sh
-echo "startxfce4" >> "$chroot_path"/etc/xrdp/startwm.sh
+project_mods
 
 # 9. Umount - Chroot Umgebung auflösen
 

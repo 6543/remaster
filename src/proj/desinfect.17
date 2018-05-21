@@ -250,3 +250,14 @@ function tools_add-desinfect.17() {
   sourcelist_desinfect_set_nomal2017 "$chroot_dir"
 }
 function tools_add() { tools_add-desinfect.17 $@; }
+
+
+function project_mods-desinfect.17() {
+  #config xrdp to start xfce
+  [ -d "$chroot_path/etc/xrdp/" ] && {
+    echo '#!/bin/sh' > "$chroot_path"/etc/xrdp/startwm.sh
+    echo "export LANG=\"de_DE.UTF-8\"" >> "$chroot_path"/etc/xrdp/startwm.sh
+    echo "startxfce4" >> "$chroot_path"/etc/xrdp/startwm.sh
+  }
+}
+function project_mods() { project_mods-desinfect.17 $@; }
