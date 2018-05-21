@@ -6,7 +6,7 @@
 ##### Base Template D E B I A N ####
 ####################################
 # .
-
+project_relation="debian"
 
 #tools_add [chroot_dir] [tools_list]
 function tools_add() {

@@ -5,3 +5,4 @@
 #desinfect.15
 # . -Y ubuntu.14.04 -> ubuntu -> debian
 source <LIBDIR>/proj/ubuntu.14.04
+project_relation="desinfect.15 $project_relation"

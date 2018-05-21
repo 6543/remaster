@@ -5,3 +5,4 @@
 #ubuntu.16.04
 # . -> ubuntu -> debian
 source <LIBDIR>/proj/ubuntu
+project_relation="ubuntu.16.04 $project_relation"
