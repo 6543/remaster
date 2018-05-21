@@ -28,3 +28,7 @@ function proxy_enable() {
 function dns_set() {
 	echo "$project: dns_set ot available"
 }
+
+function project_mods() {
+	echo "$project: project_mods ot available"
+}
