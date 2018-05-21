@@ -3,6 +3,6 @@
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
 #<PROJECT_NAME>
-# . -> <PROJECT_PARENT> -> <PROJECT_BASE>
-source <LIBDIR>/proj/<PROJECT_PARENT>
+#<project_relation>
+source <LIBDIR>/proj/<BASE>
 project_relation="<PROJECT_NAME> $project_relation"
