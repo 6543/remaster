@@ -21,10 +21,17 @@ function iso_extract() {
 		return 12
 	}
 
+	iso_source_is_url=false
 	iso_source="$1"
 	[ -f "$iso_source" ] || {
-		echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
-		return 11
+		#if it is an url...
+		if [ url-exist ]; then
+			iso_source_is_url=true
+			#dl to tmp + set iso_source
+		else
+			echo "### ERROR ### iso_extract: ISO \"$iso_source\" not exist!"
+			return 11
+		fi
 	}
 
 
@@ -42,6 +49,7 @@ function iso_extract() {
 	#clear tmp mountpoint
 	umount "$iso_source"
 	rm -r "$tmpdir"
+	[ "$iso_source_is_url" == "true" ] && rm "$iso_source"
 	tmpdir=
 
 	echo "done"
