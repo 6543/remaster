@@ -10,37 +10,37 @@
 
 #set functions
 [ -d "<LIBDIR>" ] || {
-  echo "ERROR Librarys not found"
-  exit 1
+    echo "ERROR Librarys not found"
+    exit 1
 }
 
 #read main setting
 if [ -f "<ROOTDIR>/etc/remaster/config.cfg" ]; then
-  source "<ROOTDIR>/etc/remaster/config.cfg"
+    source "<ROOTDIR>/etc/remaster/config.cfg"
 else
-  if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg" ]; then
-    source "<ROOTDIR>/etc/remaster/config.sample.cfg"
-  else
-    echo "ERROR config not found"
-    exit 1
-  fi
+    if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg" ]; then
+        source "<ROOTDIR>/etc/remaster/config.sample.cfg"
+    else
+        echo "ERROR config not found"
+        exit 1
+    fi
 fi
 #check LOG
 {
-  [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
+    [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
 
-  if [ -f "$log_file" ]; then
-    echo > "$log_file"
-  else
-    #check if folder exist
-    [ -d "${log_file%/*}" ] || {
-        # N-> exit 3
-        echo "Directory for Log didnt exist"
-        exit 3
-    }
-    #create LOG
-    touch "$log_file"
-  fi
+    if [ -f "$log_file" ]; then
+        echo > "$log_file"
+    else
+        #check if folder exist
+        [ -d "${log_file%/*}" ] || {
+            # N-> exit 3
+            echo "Directory for Log didnt exist"
+            exit 3
+        }
+        #create LOG
+        touch "$log_file"
+    fi
 }
 
 #####################################################################################
@@ -189,8 +189,8 @@ iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
 # 3. Entpacken der Dateien des Live-Systems
 filesystem_img="`find  "$iso_extr_dir" -name filesystem.squashfs`"
 [ -e "$filesystem_img" ] || {
-  echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
-  on_exit 15 >> "$log_file"
+    echo "### ERROR ### Image \"$iso_source\" has no \"filesystem.squashfs\"" >> "$log_file"
+    on_exit 15 >> "$log_file"
 }
 
 filesystem_extract "$filesystem_img" "$chroot_path" >> "$log_file"
@@ -203,8 +203,8 @@ error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_fil
 
 # 5. Setzen der Netzwerk-Einstellungen:
 [ -n "$proxy_host" ] && {
-  proxy_enable "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+    proxy_enable "$chroot_path" "$proxy_host" "$proxy_port" >> "$log_file"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 }
 
 dns_set "$chroot_path" "$domain" "$nameserver" >> "$log_file"
@@ -244,8 +244,8 @@ error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_fil
 
 #Überprüfen ob alles ausgehängt wurde
 [ "`chroot_is_mounted "$chroot_path"`" == "true" ] && {
-  echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
-  on_exit 21 >> "$log_file"
+    echo "### ERROR ### Cant Unmount Chroot!" >> "$log_file"
+    on_exit 21 >> "$log_file"
 }
 
 # 10. Packen und Ersetzen der Dateien des Live-Systems
@@ -257,19 +257,19 @@ error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_fil
 
 # wenn iso gewünscht
 [ "$iso_aim" != "" ] && {
-  iso_create "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+    iso_create "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable" >> "$log_file"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 }
 
 # wenn filesystem gewünscht
 [ "$squashfs_path" != "" ] && {
-  #wen bereits forhanden dann löschen
-  [ -f "$squashfs_path" ] && rm "$squashfs_path"
-  cp "$filesystem_img" "$squashfs_path" >> "$log_file"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+    #wen bereits forhanden dann löschen
+    [ -f "$squashfs_path" ] && rm "$squashfs_path"
+    cp "$filesystem_img" "$squashfs_path" >> "$log_file"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-  chmod 666 "$squashfs_path"
-  error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+    chmod 666 "$squashfs_path"
+    error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 }
 
 chmod 666 "$iso_aim" "$filesystem_img" >> "$log_file"
