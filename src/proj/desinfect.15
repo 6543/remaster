@@ -9,8 +9,8 @@ project_relation="desinfect.15 $project_relation"
 
 
 
-#iso_create_desinfect2015 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
-function iso_create_desinfect2015() {
+#iso_create-desinfect.15 [chroot_path] [iso_extr_dir] [iso_aim] [iso_lable]
+function iso_create-desinfect.15() {
   echo "prepere iso folder ... "
 
   chroot_path="$1"
@@ -24,14 +24,15 @@ function iso_create_desinfect2015() {
 
   echo "done"
 
-  iso_create  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
+  iso_create-debian  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
 }
+function iso_create() { iso_create-desinfect.15 $@ }
 
-#chroot_initial_desinfect2015 [chroot_dir]
-function chroot_initial_desinfect2015() {
+#chroot_initial-desinfect.15 [chroot_dir]
+function chroot_initial-desinfect.15() {
   #$1 = chroot dir
 
-  chroot_initial "$1"
+  chroot_initial-debian "$1"
 
   echo -n "initial desinfect on chroot ... "
 
@@ -49,11 +50,12 @@ function chroot_initial_desinfect2015() {
 
   echo "done"
 }
+function iso_create() { iso_create-desinfect.15 $@ }
 
-#chroot_umount_desinfect2015 [chroot_dir]
-function chroot_umount_desinfect2015() {
+#chroot_umount-desinfect.15 [chroot_dir]
+function chroot_umount-desinfect.15() {
   #call main mount
-  chroot_umount "$1"
+  chroot_umount-debian "$1"
 
   echo -n "unmount desinfect on chroot ... "
   #check chroot dir
@@ -74,11 +76,12 @@ function chroot_umount_desinfect2015() {
 
   echo "done"
 }
+function chroot_umount() { chroot_umount-desinfect.15 $@ }
 
-#proxy_enable_desinfect2015 [chroot_dir] [proxy_host] [proxy_port]
-function proxy_enable_desinfect2015() {
+#proxy_enable-desinfect.15 [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable-desinfect.15() {
 
-  proxy_enable $1 $2 $3
+  proxy_enable-debian $1 $2 $3
 
   echo -n "enable proxy for desinfect's av ... "
 
@@ -105,6 +108,7 @@ function proxy_enable_desinfect2015() {
 
   echo "done"
 }
+function proxy_enable() { proxy_enable-desinfect.15 $@ }
 
 #sourcelist_desinfect_set_nomal2015 [chroot_dir]
 function sourcelist_desinfect_set_nomal2015() {
@@ -173,14 +177,14 @@ function sourcelist_desinfect_set_extendet2015() {
   echo "done"
 }
 
-#os_update_desinfect2015 [chroot_dir]
-function os_update_desinfect2015() {
+#os_update-desinfect.15 [chroot_dir]
+function os_update-desinfect.15() {
   #$1 = chroot directory
 
   chroot_dir="$1"
 
   #call main os_update
-  os_update "$chroot_dir"
+  os_update-debian "$chroot_dir"
 
   echo "update virus definitions ... "
 
@@ -208,14 +212,16 @@ function os_update_desinfect2015() {
 
   echo "done"
 }
+function os_update() { os_update-desinfect.15 $@ }
 
-#tools_add_desinfect2015 [chroot_dir] [tools_list]
-function tools_add_desinfect2015() {
+#tools_add-desinfect.15 [chroot_dir] [tools_list]
+function tools_add-desinfect.15() {
   #$1 = chroot directory
   chroot_dir="$1"
   tools_list="$2"
 
   sourcelist_desinfect_set_extendet2015 "$chroot_dir"
-  tools_add "$chroot_dir" "$tools_list"
+  tools_add-debian "$chroot_dir" "$tools_list"
   sourcelist_desinfect_set_nomal2015 "$chroot_dir"
 }
+function tools_add() { tools_add-desinfect.15 $@ }
