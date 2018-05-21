@@ -35,3 +35,56 @@ function os_update() {
 
 	echo "done"
 }
+
+#proxy_enable [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable() {
+  echo -n "enable proxy ... "
+
+  chroot_dir="$1"
+  proxy_host="$2"
+  proxy_port="$3"
+
+  [ -d "$chroot_dir" ] || {
+    echo "### ERROR ### chroot_umount_desinfect: chroot directory not exist!"
+    return 12
+  }
+
+  #Wenn alle zwei Parameter gegeben
+  if [ "$proxy_host" != "" ] && [ "$proxy_port" != "" ] ; then
+    echo "http_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "https_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "ftp_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+
+    echo "HTTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "HTTPS_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "FTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+
+    echo "Acquire::http::Proxy  \"http://$proxy_host:$proxy_port\"\;" > $chroot_dir/etc/apt/apt.conf.d/90proxy
+    echo "Acquire::ftp::Proxy \"ftp://$proxy_host:$proxy_port\"\;" >> $chroot_dir/etc/apt/apt.conf.d/90proxy
+
+    echo "done"
+  else
+    if [ "$proxy_host" == "" ] && [ "$proxy_port" == "" ] ; then
+      echo "done"
+    else
+      echo "### ERROR ### proxy_enable: wrong parameters! (\"$chroot_dir\"; \"$proxy_host\"; \"$proxy_port\")"
+      echo "proxy_enable [chroot_dir] [proxy_host] [proxy_port]"
+      return 2
+    fi
+  fi
+}
+
+#dns_set [chroot_dir] [domain] [nameserver]
+function dns_set() {
+  echo -n "set dns config ... "
+
+  rm "$chroot_dir/etc/resolv.conf"
+
+  [ "$2" != "" ] && echo "domain $2" >> "$chroot_dir/etc/resolv.conf"
+  echo "search $2" >> "$chroot_dir/etc/resolv.conf"
+  for namesv in `echo "$3" | tr "," " "`; do
+    echo "nameserver $namesv" >> "$chroot_dir/etc/resolv.conf"
+  done
+
+  echo "done"
+}
