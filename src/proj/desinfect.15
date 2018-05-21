@@ -26,7 +26,7 @@ function iso_create-desinfect.15() {
 
   iso_create-debian  "$chroot_path" "$iso_extr_dir" "$iso_aim" "$iso_lable"
 }
-function iso_create() { iso_create-desinfect.15 $@ }
+function iso_create() { iso_create-desinfect.15 $@; }
 
 #chroot_initial-desinfect.15 [chroot_dir]
 function chroot_initial-desinfect.15() {
@@ -50,7 +50,7 @@ function chroot_initial-desinfect.15() {
 
   echo "done"
 }
-function iso_create() { iso_create-desinfect.15 $@ }
+function iso_create() { iso_create-desinfect.15 $@; }
 
 #chroot_umount-desinfect.15 [chroot_dir]
 function chroot_umount-desinfect.15() {
@@ -76,7 +76,7 @@ function chroot_umount-desinfect.15() {
 
   echo "done"
 }
-function chroot_umount() { chroot_umount-desinfect.15 $@ }
+function chroot_umount() { chroot_umount-desinfect.15 $@; }
 
 #proxy_enable-desinfect.15 [chroot_dir] [proxy_host] [proxy_port]
 function proxy_enable-desinfect.15() {
@@ -108,7 +108,7 @@ function proxy_enable-desinfect.15() {
 
   echo "done"
 }
-function proxy_enable() { proxy_enable-desinfect.15 $@ }
+function proxy_enable() { proxy_enable-desinfect.15 $@; }
 
 #sourcelist_desinfect_set_nomal2015 [chroot_dir]
 function sourcelist_desinfect_set_nomal2015() {
@@ -212,7 +212,7 @@ function os_update-desinfect.15() {
 
   echo "done"
 }
-function os_update() { os_update-desinfect.15 $@ }
+function os_update() { os_update-desinfect.15 $@; }
 
 #tools_add-desinfect.15 [chroot_dir] [tools_list]
 function tools_add-desinfect.15() {
@@ -224,4 +224,4 @@ function tools_add-desinfect.15() {
   tools_add-debian "$chroot_dir" "$tools_list"
   sourcelist_desinfect_set_nomal2015 "$chroot_dir"
 }
-function tools_add() { tools_add-desinfect.15 $@ }
+function tools_add() { tools_add-desinfect.15 $@; }

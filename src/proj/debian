@@ -24,7 +24,7 @@ function tools_add-debian() {
 	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
 	echo "done"
 }
-function tools_add() { tools_add-debian $@ }
+function tools_add() { tools_add-debian $@; }
 
 #os_update [chroot_dir]
 function os_update-debian() {
@@ -40,7 +40,7 @@ function os_update-debian() {
 
 	echo "done"
 }
-function os_update() { os_update-debian $@ }
+function os_update() { os_update-debian $@; }
 
 #proxy_enable [chroot_dir] [proxy_host] [proxy_port]
 function proxy_enable-debian() {
@@ -79,7 +79,7 @@ function proxy_enable-debian() {
     fi
   fi
 }
-function proxy_enable() { proxy_enable-debian $@ }
+function proxy_enable() { proxy_enable-debian $@; }
 
 #dns_set [chroot_dir] [domain] [nameserver]
 function dns_set-debian() {
@@ -95,4 +95,4 @@ function dns_set-debian() {
 
   echo "done"
 }
-function dns_set() { dns_set-debian $@ }
+function dns_set() { dns_set-debian $@; }
