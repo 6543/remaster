@@ -2,11 +2,15 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
+source <LIBDIR>/proj/base
+#debian
+# . -> base
+project_relation="debian"
+
 ####################################
 ##### Base Template D E B I A N ####
 ####################################
-# .
-project_relation="debian"
+
 
 #tools_add [chroot_dir] [tools_list]
 function tools_add() {
