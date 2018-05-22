@@ -2,6 +2,9 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
+#dependency
+source <LIBDIR>/func/filesystem_get_type
+
 #filesystem_extract [filesystem_img_source] [chroot_path]
 function filesystem_extract() {
 	echo "extract filesystem ..."
