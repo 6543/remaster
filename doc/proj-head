@@ -1,0 +1,8 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#<PROJECT_NAME>
+#<project_relation>
+source <LIBDIR>/proj/<BASE>
+project_relation="<PROJECT_NAME> $project_relation"

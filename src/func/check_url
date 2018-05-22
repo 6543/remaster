@@ -1,0 +1,20 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#check_url [URL]
+function check_url() {
+    URL="$1"
+    if [[ `wget -S --spider "$URL"  2>&1 | grep 'HTTP/1.1 200 OK'` ]]; then
+      echo "true"
+      return 0
+    else
+      echo "false"
+      return 1
+    fi
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+    check_url $@
+}

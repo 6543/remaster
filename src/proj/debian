@@ -2,14 +2,18 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
+source <LIBDIR>/proj/base
+#debian
+# . -> base
+project_relation="debian"
+
 ####################################
 ##### Base Template D E B I A N ####
 ####################################
-# .
 
 
 #tools_add [chroot_dir] [tools_list]
-function tools_add() {
+function tools_add-debian() {
 	echo "add tools ... "
 	#$1 = chroot directory
 	chroot_dir="$1"
@@ -20,9 +24,10 @@ function tools_add() {
 	chroot "$chroot_dir" /bin/bash -c "apt-get install -y $tools_list" | grep -v "wird eingerichtet ..." | grep -v "Vormals nicht ausgewähltes Paket" | grep -v "Entpacken von" | grep -v "Holen: " | grep -v "Trigger für" | grep -v "update-alternatives:"
 	echo "done"
 }
+function tools_add() { tools_add-debian $@; }
 
 #os_update [chroot_dir]
-function os_update() {
+function os_update-debian() {
 	echo "updating os ... "
 	#$1 = chroot directory
 
@@ -35,3 +40,59 @@ function os_update() {
 
 	echo "done"
 }
+function os_update() { os_update-debian $@; }
+
+#proxy_enable [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable-debian() {
+  echo -n "enable proxy ... "
+
+  chroot_dir="$1"
+  proxy_host="$2"
+  proxy_port="$3"
+
+  [ -d "$chroot_dir" ] || {
+    echo "### ERROR ### chroot_umount_desinfect: chroot directory not exist!"
+    return 12
+  }
+
+  #Wenn alle zwei Parameter gegeben
+  if [ "$proxy_host" != "" ] && [ "$proxy_port" != "" ] ; then
+    echo "http_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "https_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "ftp_proxy=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+
+    echo "HTTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "HTTPS_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+    echo "FTP_PROXY=\"http://$proxy_host:$proxy_port\"" >> $chroot_dir/etc/environment
+
+    echo "Acquire::http::Proxy  \"http://$proxy_host:$proxy_port\"\;" > $chroot_dir/etc/apt/apt.conf.d/90proxy
+    echo "Acquire::ftp::Proxy \"ftp://$proxy_host:$proxy_port\"\;" >> $chroot_dir/etc/apt/apt.conf.d/90proxy
+
+    echo "done"
+  else
+    if [ "$proxy_host" == "" ] && [ "$proxy_port" == "" ] ; then
+      echo "done"
+    else
+      echo "### ERROR ### proxy_enable: wrong parameters! (\"$chroot_dir\"; \"$proxy_host\"; \"$proxy_port\")"
+      echo "proxy_enable [chroot_dir] [proxy_host] [proxy_port]"
+      return 2
+    fi
+  fi
+}
+function proxy_enable() { proxy_enable-debian $@; }
+
+#dns_set [chroot_dir] [domain] [nameserver]
+function dns_set-debian() {
+  echo -n "set dns config ... "
+
+  rm "$chroot_dir/etc/resolv.conf"
+
+  [ "$2" != "" ] && echo "domain $2" >> "$chroot_dir/etc/resolv.conf"
+  echo "search $2" >> "$chroot_dir/etc/resolv.conf"
+  for namesv in `echo "$3" | tr "," " "`; do
+    echo "nameserver $namesv" >> "$chroot_dir/etc/resolv.conf"
+  done
+
+  echo "done"
+}
+function dns_set() { dns_set-debian $@; }

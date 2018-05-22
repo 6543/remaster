@@ -7,3 +7,4 @@
 ####################################
 # . -> debian
 source <LIBDIR>/proj/debian
+project_relation="ubuntu $project_relation"

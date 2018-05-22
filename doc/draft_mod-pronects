@@ -1,0 +1,19 @@
+maddl@NB-Maddl:~$ function a() { echo null; }
+maddl@NB-Maddl:~$ a
+null
+maddl@NB-Maddl:~$ function a_desinfect() { echo desinfect; }
+maddl@NB-Maddl:~$ a_desinfect 
+desinfect
+maddl@NB-Maddl:~$ alias a=a_desinfect
+maddl@NB-Maddl:~$ a
+desinfect
+maddl@NB-Maddl:~$ alias --help
+bash: alias: --: Ungültige Option
+alias: Gebrauch: alias [-p] [Name[=Wert] ... ]
+maddl@NB-Maddl:~$ man alias 
+Kein Handbucheintrag für alias vorhanden
+maddl@NB-Maddl:~$ alias a=a
+maddl@NB-Maddl:~$ a
+null
+maddl@NB-Maddl:~$ 
+
