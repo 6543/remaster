@@ -1,0 +1,34 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+##################
+##### B a s e ####
+##################
+# .
+project_relation=""
+[ -z "$project" ] && project=base
+
+#tools_add [chroot_dir] [tools_list]
+function tools_add() {
+	echo "$project: tools_add ot available"
+}
+
+#os_update [chroot_dir]
+function os_update() {
+	echo "$project: os_update ot available"
+}
+
+#proxy_enable [chroot_dir] [proxy_host] [proxy_port]
+function proxy_enable() {
+	echo "$project: proxy_enable ot available"
+}
+
+#dns_set [chroot_dir] [domain] [nameserver]
+function dns_set() {
+	echo "$project: dns_set ot available"
+}
+
+function project_mods() {
+	echo "$project: project_mods ot available"
+}
