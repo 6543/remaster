@@ -8,4 +8,4 @@ export "mod=$1"
 
 
 ja
-
+[ "$?" != "0" ] && echo use $0 with doja.sh next time ;)
