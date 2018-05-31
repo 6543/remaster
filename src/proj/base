@@ -6,8 +6,12 @@
 ##### B a s e ####
 ##################
 # .
+
+# Enviroment
 project_relation=""
 [ -z "$project" ] && project=base
+config_keys="iso_source iso_aim iso_lable squashfs_path proxy_host proxy_port domain nameserver project log_file log_mail_source log_mail_smtp log_mail_aim log_mail_subject tools_list"
+
 
 #tools_add [chroot_dir] [tools_list]
 function tools_add() {

@@ -5,7 +5,7 @@
 #@licence GNUv3
 
 #####################################################################################
-################## S e t t i n g s ##################################################
+################## F u n c t i o n s ################################################
 #####################################################################################
 
 #set functions
@@ -13,44 +13,6 @@
     echo "ERROR Librarys not found"
     exit 1
 }
-
-#read main setting
-if [ -f "<ROOTDIR>/etc/remaster/config.cfg" ]; then
-    source "<ROOTDIR>/etc/remaster/config.cfg"
-else
-    if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg" ]; then
-        source "<ROOTDIR>/etc/remaster/config.sample.cfg"
-    else
-        echo "ERROR config not found"
-        exit 1
-    fi
-fi
-#check LOG
-{
-    [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
-
-    if [ -f "$log_file" ]; then
-        echo > "$log_file"
-    else
-        #check if folder exist
-        [ -d "${log_file%/*}" ] || {
-            # N-> exit 3
-            echo "Directory for Log didnt exist"
-            exit 3
-        }
-        #create LOG
-        touch "$log_file"
-    fi
-}
-
-#####################################################################################
-################## F u n c t i o n s ################################################
-#####################################################################################
-
-### Error Handlings ###
-
-#check_config
-source <LIBDIR>/func/check_config
 
 #on_exit [error_level]
 source <LIBDIR>/func/on_exit
@@ -112,64 +74,76 @@ source <LIBDIR>/func/chroot_is_mounted
 #chroot_sh [chroot_dir] [command]
 source <LIBDIR>/func/chroot_sh
 
-####################################
-### Workaround - set Project
-source <LIBDIR>/proj/desinfect.17
-####################################
+### config ###
+
+#config_load [config]
+source <LIBDIR>/func/config_load
+
+#config_check
+source <LIBDIR>/func/config_check
+
+
+#####################################################################################
+################## S e t t i n g s ##################################################
+#####################################################################################
+
+#read main setting
+if [ -f "<ROOTDIR>/etc/remaster/config.cfg" ]; then
+    config="<ROOTDIR>/etc/remaster/config.cfg"
+else
+    if [ -f "<ROOTDIR>/etc/remaster/config.sample.cfg" ]; then
+        config="<ROOTDIR>/etc/remaster/config.sample.cfg"
+    else
+        echo "ERROR config not found"
+        exit 1
+    fi
+fi
+#check LOG
+{
+    export "`cat "$config" | grep ^[^#] | grep ^log_file= | cut -d "#" -f 1 | tr -d '"'`"
+    [ -z "$log_file" ] && log_file="/tmp/remaster_`date '+%Y-%m-%d'`"
+
+    if [ -f "$log_file" ]; then
+        echo > "$log_file"
+    else
+        #check if folder exist
+        [ -d "${log_file%/*}" ] || {
+            # N-> exit 3
+            echo "Directory for Log didnt exist"
+            exit 3
+        }
+        #create LOG
+        touch "$log_file"
+    fi
+}
+
 
 ###########################################################
 ################# P r o c e s s ... #######################
 ###########################################################
 
-#Start LOG
+### Start LOG ###
 tail -f "$log_file" --pid="$$" &
+
+echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
+echo >> "$log_file"
+
+
+### S e t t i n g s ###
+config_load $config >> "$log_file"
+error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
+echo $'\n\n' >> "$log_file"
+
+
+### Enviroment ###
+echo "### Enviroment ###"  >> "$log_file"
 
 chroot_path="`mktemp -d`"
 iso_extr_dir="`mktemp -d`"
 
-echo "Remaster LOG `date '+%Y-%m-%d'`" > "$log_file"
-echo "MODE: renew" >> "$log_file"
-echo "HOST: `hostname`" >> "$log_file"
-echo >> "$log_file"
-
-echo "### S e t t i n g s ###" >> "$log_file"
-echo "#CD/DVD" >> "$log_file"
-echo "iso_source=\"$iso_source\"" >> "$log_file"
-echo "iso_aim=\"$iso_aim\"" >> "$log_file"
-echo "iso_lable=\"$iso_lable\"" >> "$log_file"
-echo >> "$log_file"
-
-echo "#Filesystem (for pxe)"  >> "$log_file"
-echo "squashfs_path=\"$squashfs_path\""  >> "$log_file"
-echo >> "$log_file"
-
-echo "#Network" >> "$log_file"
-echo "proxy_host=\"$proxy_host\"" >> "$log_file"
-echo "proxy_port=\"$proxy_port\"" >> "$log_file"
-echo "domain=\"$domain\"" >> "$log_file"
-echo "nameserver=\"$nameserver\"" >> "$log_file"
-echo >> "$log_file"
-
-echo "#remaster_script" >> "$log_file"
-echo "project=\"$project\"" >> "$log_file"
-echo >> "$log_file"
-
-echo "log_file=\"$log_file\""
-echo "log_mail_aim=\"$log_mail_aim\""
-echo "log_mail_subject=\"$log_mail_subj >> "$log_file"ect\""
-echo ""
-
-echo "#Sonstiges" >> "$log_file"
-echo "tools_list=\"$tools_list\"" >> "$log_file"
-echo $'\n' >> "$log_file"
-
-echo "### Enviroment ###"
 echo "iso_extr_dir=\"$iso_extr_dir\"" >> "$log_file"
 echo "chroot_path=\"$chroot_path\"" >> "$log_file"
-#env >> "$log_file"
-echo $'\n\n' >> "$log_file"
-
-echo $'### R U N ... ###\n' >> "$log_file"
+echo "HOST: `hostname`" >> "$log_file"
 
 #1. Set and Check Enviroment
 check_user >> "$log_file"
@@ -178,10 +152,14 @@ error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_fil
 check_dependency >> "$log_file"
 error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
-check_config >> "$log_file"
+config_check >> "$log_file"
 error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
 
 check_update >> "$log_file"
+
+
+### R U N ... ###
+echo $'### R U N ... ###\n' >> "$log_file"
 
 # 2. Entpacke ISO
 iso_extract "$iso_source" "$iso_extr_dir"  >> "$log_file"
