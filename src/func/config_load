@@ -42,8 +42,8 @@ function config_load() {
             config_value="${config_value/<TIME>/`date '+%H:%M:%S'`}"
 
             #save seting in environment var
-            export "$config_key=$config_value"
-            echo   "$config_key=$config_value"
+            eval "$config_key=\"$config_value\""
+            echo $config_key=${!config_key}
 
         else
             echo "WARNUNG: $config_key is an inconrect setting. This will be ignored"
