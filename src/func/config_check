@@ -24,7 +24,7 @@ function config_check() {
                 echo 'iso_source -> squashfs'
             else
                 # ERROR
-                echo "No corect AIM in Settings"
+                echo "Settings: No corect AIM"
                 return 3
             fi
         fi
@@ -32,14 +32,14 @@ function config_check() {
         if [ -f "$squashfs_path" ]; then
             if [ -n "$iso_aim" ]; then
                 # ERROR
-                echo "only Squashfs source in Settings, cant creat ISO"
+                echo "Settings: only Squashfs source in Settings, cant creat ISO"
                 return 3
             else
                 echo 'squashfs -> squashfs'
             fi
         else
             # ERROR
-            echo "No corect Source in Settings"
+            echo "Settings: No corect Source"
             return 3
         fi
     fi
