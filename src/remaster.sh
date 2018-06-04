@@ -76,8 +76,8 @@ source <LIBDIR>/func/chroot_sh
 
 ### config ###
 
-#config_load [config]
-source <LIBDIR>/func/config_load
+#config_build jobfile configenv
+source <LIBDIR>/func/config_build
 
 #config_check
 source <LIBDIR>/func/config_check
@@ -98,6 +98,7 @@ else
         exit 1
     fi
 fi
+### -> $1 jobfile, if zero and onlyone file exist ues this else print error and list
 #check LOG
 {
     export "`cat "$config" | grep ^[^#] | grep ^log_file= | cut -d "#" -f 1 | tr -d '"'`"
@@ -130,9 +131,10 @@ echo >> "$log_file"
 
 
 ### S e t t i n g s ###
-config_load $config >> "$log_file"
+config_env=`mktemp`
+config_build $config $config_env >> "$log_file"
 error_level="$?"; [ "$error_level" != "0" ] && on_exit $error_level >> "$log_file"
-echo $'\n\n' >> "$log_file"
+source $config_env
 
 
 ### Enviroment ###

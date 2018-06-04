@@ -2,14 +2,25 @@
 #remaster lib
 [ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
 
-#config_load config
-function config_load() {
-    config="$1"
+#config_build jobfile configenv
+function config_build() {
+    config_file="$1"
+    config_env="$2"
 
     echo "### S e t t i n g s ###"
 
+    [ -f "$config_file" ] || {
+        echo "Config: wrong path for jobfile"
+        exit 3
+    }
+    [ -f "$config_env" ] || {
+        echo "Config: wrong path for config enviroment"
+        exit 3
+    }
+
+
     ##load project
-    export "`cat "$config" | grep ^[^#] | grep ^project= | cut -d "#" -f 1 | tr -d '"'`"
+    export "`cat "$config_file" | grep ^[^#] | grep ^project= | cut -d "#" -f 1 | tr -d '"'`"
 
     #check if project template exist
     [ -f "<LIBDIR>/proj/$project" ] || {
@@ -21,7 +32,7 @@ function config_load() {
 
     echo; echo #space
 
-    cat "$config" | grep ^[^#] | cut -d "#" -f 1 | grep '=' | while read line; do
+    cat "$config_file" | grep ^[^#] | cut -d "#" -f 1 | grep '=' | while read line; do
         #read each var line
         config_key=`echo $line | cut -d "=" -f 1`
         config_value=`echo $line | cut -d "=" -f 2 | tr -d '"'`
@@ -42,8 +53,7 @@ function config_load() {
             config_value="${config_value/<TIME>/`date '+%H:%M:%S'`}"
 
             #save seting in environment var
-            eval "$config_key=\"$config_value\""
-            echo $config_key=${!config_key}
+            echo "$config_key='$config_value'" | tee $config_env
 
         else
             echo "WARNUNG: $config_key is an inconrect setting. This will be ignored"
@@ -55,5 +65,5 @@ function config_load() {
 
 #this func is standalone executable
 [ -n "$1" ] && {
-    config_load $@
+    config_build $@
 }
