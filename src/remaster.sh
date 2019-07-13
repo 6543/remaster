@@ -49,6 +49,7 @@ fi
 
 
  case $(echo $1 | tr -d '-') in
+    '') ;;
     version|V)
           echo Remaster 2.0.4
           exit 0
