@@ -55,7 +55,12 @@ fi
           exit 0
           ;;
     config|c)
-          echo "[WIP]"
+          if [ -f "$2" ]; then
+              source "$2"
+          else
+              echo "ERROR Config \"$2\" not found"
+          fi
+    else
           ;;
     *)
           echo 'Remaster update Live Systems'
