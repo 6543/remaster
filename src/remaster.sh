@@ -55,8 +55,11 @@ fi
           exit 0
           ;;
     *)
-          echo 'No Helpmenue jet'
-          echo '  see issue https://code.obermui.de/6543/remaster/issues/24'
+          echo 'Remaster update Live Systems'
+          echo '  more information at: https://github.com/6543/remaster/'
+          echo ''
+          echo '  --version|-V            show current version'
+          echo '  --config|-c <config>    run remaster with custom config'
           exit 0
           ;;
 esac
