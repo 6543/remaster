@@ -54,6 +54,16 @@ fi
           echo Remaster 2.0.4
           exit 0
           ;;
+    config|c)
+          if [ -f "$2" ]; then
+              source <LIBDIR>/func/clear_config
+              source "$2"
+          else
+              echo "ERROR Config \"$2\" not found"
+              exit 1
+          fi
+    else
+          ;;
     *)
           echo 'Remaster update Live Systems'
           echo '  more information at: https://github.com/6543/remaster/'

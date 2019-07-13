@@ -1,0 +1,35 @@
+#!/bin/bash
+#remaster lib
+[ -d "<LIBDIR>" ] || { echo "LIBDIR not exist"; exit 1; }
+
+#check_config
+function clear_config() {
+
+  ## Source & Aim options
+  iso_source=
+  squashfs_path=
+  iso_aim=
+  iso_lable=
+
+  ## network
+  proxy_host=
+  proxy_port=
+  domain=
+  nameserver=
+
+  ## Project / Distro
+  project=
+
+  ## LOG Settings
+  log_file=
+  log_mail_source=
+  log_mail_smtp=
+  log_mail_aim=
+  log_mail_subject=
+
+}
+
+#this func is standalone executable
+[ -n "$1" ] && {
+    clear_config $@
+}
