@@ -18,7 +18,7 @@ date=`date +%Y-%m-%d`
 
   echo >> changes/remaster.md
   echo $date - $version >> changes/remaster.md
-  editor changes/remaster.md
+  $EDITOR changes/remaster.md
 }
 
 [ -f "DEBIAN/control" ] && {
