@@ -56,9 +56,11 @@ fi
           ;;
     config|c)
           if [ -f "$2" ]; then
+              source <LIBDIR>/func/clear_config
               source "$2"
           else
               echo "ERROR Config \"$2\" not found"
+              exit 1
           fi
     else
           ;;
