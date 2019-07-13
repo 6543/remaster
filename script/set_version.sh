@@ -9,6 +9,7 @@ date=`date +%Y-%m-%d`
 
   #nummer
   sed -i "/#@version\ /c\#@version\ $version_sed" src/remaster.sh
+  sed -i "/echo\ Remaster\ /c\ \ \ \ \ \ \ \ \ \ echo\ Remaster\ $version_sed" src/remaster.sh
 
   #datum
   sed -i "/#@date\ /c\#@date\ $date" src/remaster.sh
