@@ -54,6 +54,9 @@ fi
           echo Remaster 2.0.4
           exit 0
           ;;
+    config|c)
+          echo "[WIP]"
+          ;;
     *)
           echo 'Remaster update Live Systems'
           echo '  more information at: https://github.com/6543/remaster/'
