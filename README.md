@@ -1,3 +1,7 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![GitHub release](https://img.shields.io/github/v/release/6543/remaster.svg)](https://github.com/6543/remaster/releases/latest)
+
+
 # remaster
 
 
