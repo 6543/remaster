@@ -1,7 +1,7 @@
 #!/bin/bash
-#@version 2.0.4
+#@version 2.1.0
 #@autor 6543@obermui.de
-#@date 2018-05-22
+#@date 2019-09-20
 #@licence GNUv3
 
 #####################################################################################
@@ -51,7 +51,7 @@ fi
  case $(echo $1 | tr -d '-') in
     '') ;;
     version|V)
-          echo Remaster 2.0.4
+          echo Remaster 2.1.0
           exit 0
           ;;
     config|c)

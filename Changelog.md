@@ -30,3 +30,13 @@
  * restructure code
  * use proj templates
  * some help scripts
+
+2019-09-20 - 2.1.0
+ * fixes
+  - filesystem_extract: filesystem_get_type
+  - update dev scripts
+  - work without arguments
+ * check_update: acuret message
+ * restruct sample config
+ * add "Help & Info" menue/section (#24) (#20)
+ * --config | custom config (#25)
