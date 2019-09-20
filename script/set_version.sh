@@ -15,11 +15,11 @@ date=`date +%Y-%m-%d`
   sed -i "/#@date\ /c\#@date\ $date" src/remaster.sh
 }
 
-[ -e "changes/remaster.md" ] && {
+[ -e "Changelog.md" ] && {
 
-  echo >> changes/remaster.md
-  echo $date - $version >> changes/remaster.md
-  $EDITOR changes/remaster.md
+  echo >> Changelog.md
+  echo $date - $version >> Changelog.md
+  $EDITOR Changelog.md
 }
 
 [ -f "DEBIAN/control" ] && {
