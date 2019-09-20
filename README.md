@@ -1,5 +1,5 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![GitHub release](https://img.shields.io/github/v/release/6543/remaster.svg)](https://github.com/6543/remaster/releases/latest)
+[![Release](https://img.shields.io/badge/dynamic/json.svg?label=release&url=https://code.obermui.de/api/v1/repos/6543/remaster/releases&query=$[0].tag_name)](https://code.obermui.de/6543/remaster/releases)
 [![PGP Sig](https://img.shields.io/keybase/pgp/6543)](https://mh.obermui.de/publickey.gpg)
 [![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F6543%2Fremaster.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2F6543%2Fremaster?ref=badge_shield)
 
