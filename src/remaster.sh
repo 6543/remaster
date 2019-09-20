@@ -44,6 +44,38 @@ fi
 }
 
 #####################################################################################
+################## H e l p  &  I n f o ##############################################
+#####################################################################################
+
+
+ case $(echo $1 | tr -d '-') in
+    '') ;;
+    version|V)
+          echo Remaster 2.0.4
+          exit 0
+          ;;
+    config|c)
+          if [ -f "$2" ]; then
+              source <LIBDIR>/func/clear_config
+              source "$2"
+          else
+              echo "ERROR Config \"$2\" not found"
+              exit 1
+          fi
+    else
+          ;;
+    *)
+          echo 'Remaster update Live Systems'
+          echo '  more information at: https://github.com/6543/remaster/'
+          echo ''
+          echo '  --version|-V            show current version'
+          echo '  --config|-c <config>    run remaster with custom config'
+          exit 0
+          ;;
+esac
+
+
+#####################################################################################
 ################## F u n c t i o n s ################################################
 #####################################################################################
 

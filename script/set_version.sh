@@ -9,16 +9,17 @@ date=`date +%Y-%m-%d`
 
   #nummer
   sed -i "/#@version\ /c\#@version\ $version_sed" src/remaster.sh
+  sed -i "/echo\ Remaster\ /c\ \ \ \ \ \ \ \ \ \ echo\ Remaster\ $version_sed" src/remaster.sh
 
   #datum
   sed -i "/#@date\ /c\#@date\ $date" src/remaster.sh
 }
 
-[ -e "changes/remaster.md" ] && {
+[ -e "Changelog.md" ] && {
 
-  echo >> changes/remaster.md
-  echo $date - $version >> changes/remaster.md
-  editor changes/remaster.md
+  echo >> Changelog.md
+  echo $date - $version >> Changelog.md
+  $EDITOR Changelog.md
 }
 
 [ -f "DEBIAN/control" ] && {

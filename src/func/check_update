@@ -7,7 +7,7 @@ function check_update() {
     if curl https://raw.githubusercontent.com/6543/remaster/master/changes/remaster.md | diff - <(zcat <ROOTDIR>/usr/share/doc/remaster/changelog.gz ); then
 			echo 'INFO: Programm Aktuell'
 	else
-			echo 'WARNUNG: neue Version verfügbar'
+			echo 'WARNUNG: Ausgeführte Version entspricht nicht dem offiziellen Release'
     fi
 }
 
