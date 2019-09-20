@@ -4,6 +4,8 @@
 
 
 # remaster
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F6543%2Fremaster.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2F6543%2Fremaster?ref=badge_shield)
+
 
 
 ## Description
@@ -35,3 +37,7 @@ The aim of this Project is to create a daemon for a server, witch update live sy
 - Ubuntu/Debian
 - Desinfect17
 - one config file
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2F6543%2Fremaster.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2F6543%2Fremaster?ref=badge_large)
